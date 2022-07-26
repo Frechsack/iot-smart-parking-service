@@ -1,1 +1,1 @@
-sudo docker image build .
+sudo docker image build . -t iot-smart-parking-service
