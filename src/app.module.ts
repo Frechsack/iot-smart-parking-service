@@ -9,6 +9,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Account } from 'src/orm/entity/account';
 import { AccountRepository } from './orm/repository/account.repository';
 import { OrmModule } from './orm/orm.module';
+import { BankConnection } from './orm/entity/bank-connection';
+import { AuthenticationToken } from './orm/entity/authentication-token';
 
 @Module({
   imports: [
@@ -22,7 +24,7 @@ import { OrmModule } from './orm/orm.module';
       username: 'root',
       password: 'etcuiaUanDEiuhjs61hjcvoijWQnjvcpq',
       database: 'iot-smart-parking',
-      entities: [ Account ],
+      entities: [ Account, BankConnection, AuthenticationToken],
       synchronize: true
     }),
     DeviceModule,
