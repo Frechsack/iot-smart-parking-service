@@ -7,9 +7,7 @@ export class BankConnection {
   @Column({type: "varchar", primary: true, nullable: false})
   public iban: String;
 
-
   @OneToMany(()=>Account, (cringe)=>cringe.bankConnection)
   public accounts: Promise <Account[]>;
-
 
 }

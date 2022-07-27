@@ -1,4 +1,4 @@
-import { Entity, Column, OneToMany, ManyToOne } from 'typeorm';
+import { Entity, Column, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
 import { AuthenticationToken } from './authentication-token';
 import { BankConnection } from './bank-connection';
 
@@ -12,10 +12,9 @@ export class Account {
   @Column({type: "varchar", nullable: false})
   public secret: string;
 
-  @OneToMany( ()=>AuthenticationToken, (sus)=>sus.owner)
-  public jwts: Promise <AuthenticationToken>
 
   @ManyToOne( ()=>BankConnection, (wyld)=>wyld.accounts)
+  @JoinColumn({name: 'iban'})
   public bankConnection: Promise<BankConnection>
 
 }
