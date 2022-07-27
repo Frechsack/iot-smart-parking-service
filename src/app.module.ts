@@ -1,25 +1,34 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ConfigModule, ConfigService } from '@nestjs/config'
+import { ConfigModule } from '@nestjs/config'
 import { DeviceModule } from './device/device.module';
 import { AccountModule } from './account/account.module';
 import { CoreModule } from './core/core.module';
-import { TypeOrmConfigurator } from './type-orm-configurator';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { Account } from 'src/orm/entity/account';
+import { AccountRepository } from './orm/repository/account.repository';
+import { OrmModule } from './orm/orm.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      useClass: TypeOrmConfigurator
+    TypeOrmModule.forRoot({
+      type: 'mariadb',
+      host: 'localhost',
+      port: 3306,
+      username: 'root',
+      password: 'etcuiaUanDEiuhjs61hjcvoijWQnjvcpq',
+      database: 'iot-smart-parking',
+      entities: [ Account ],
+      synchronize: true
     }),
     DeviceModule,
     AccountModule,
-    CoreModule
+    CoreModule,
+    OrmModule,
   ],
   controllers: [AppController],
   providers: [AppService],
