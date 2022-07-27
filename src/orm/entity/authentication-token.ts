@@ -14,6 +14,16 @@ export class AuthenticationToken {
     public jwt: string;
 
     @ManyToOne(() => Account, it => it.jwts, { nullable: false, createForeignKeyConstraints: false })
-    @JoinColumn({ name: 'email'})
+    @JoinColumn({ name: 'account_email'})
     public owner: Promise<Account>;
+
+    /**
+    * relation-id
+    */
+    @Column({ name: 'account_email' })
+    private _accountEmail: string;
+
+    public get accountEmail(): string {
+      return this._accountEmail;
+    }
 }

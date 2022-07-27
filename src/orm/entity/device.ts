@@ -1,5 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
 import { DeviceType } from "./device-type";
+import { ParkingLot } from "./parking-lot";
 
 @Entity({ name: 'device' })
 export class Device {
@@ -8,13 +9,30 @@ export class Device {
   public mac: string;
 
   @ManyToOne(() => DeviceType, it => it.devices, { nullable: false })
-  @JoinColumn({ name: 'type' })
+  @JoinColumn({ name: 'device_type_name' })
   public type: Promise<DeviceType>;
 
-  @Column({ name: 'type' })
-  private _typeName: string;
+  @ManyToOne(() => ParkingLot, it => it.devices, { nullable: true })
+  @JoinColumn({ name: 'parking_lot_nr' })
+  public parkingLot: Promise<ParkingLot | null>;
 
-  public get typeName(): string {
-    return this._typeName;
+  /**
+  * relation-id
+  */
+  @Column({ name: 'device_type_name' })
+  private _deviceTypeName: string;
+
+  public get deviceTypeName(): string {
+    return this._deviceTypeName;
+  }
+
+  /**
+  * relation-id
+  */
+  @Column({ name: 'parking_lot_nr' })
+  private _parkingLotNr: string;
+
+  public get parkingLotNr(): string {
+    return this._parkingLotNr;
   }
 }

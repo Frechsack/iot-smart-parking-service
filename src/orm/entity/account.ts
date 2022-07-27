@@ -14,7 +14,7 @@ export class Account {
   public secret: string;
 
   @ManyToOne(() => BankConnection, (it) => it.accounts, { nullable: true })
-  @JoinColumn({name: 'iban'})
+  @JoinColumn({name: 'bank_connection_iban'})
   public bankConnection: Promise<BankConnection>
 
   @OneToMany(() => AuthenticationToken, it => it.owner)
@@ -25,5 +25,15 @@ export class Account {
 
   @OneToMany(() => Payment, it => it.account)
   public payments: Promise<Payment>;
+
+  /**
+  * relation-id
+  */
+  @Column({ name: 'bank_connection_iban' })
+  private _bankConnectionIban: string;
+
+  public get bankConnectionIban(): string{
+    return this._bankConnectionIban;
+  }
 
 }

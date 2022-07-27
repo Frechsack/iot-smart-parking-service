@@ -12,27 +12,27 @@ export class LicensePlatePhoto {
   public date: Date;
 
   @ManyToOne(() => LicensePlate, it => it.photos, { nullable: false })
-  @JoinColumn({ name: 'plate' })
+  @JoinColumn({ name: 'license_plate' })
   public licensePlate: Promise<LicensePlate>;
 
   @ManyToOne(() => LicensePlatePhotoType, it => it.photos, { nullable: false })
-  @JoinColumn({ name: 'type' })
+  @JoinColumn({ name: 'license_plate_photo_type' })
   public type: Promise<LicensePlatePhotoType>;
 
   /**
   * relation-id
   */
-  @Column({ primary: true, name: 'plate' })
-  private _plate: string;
+  @Column({ primary: true, name: 'license_plate' })
+  private _licensePlatePlate: string;
 
   /**
   * relation-id
   */
-  @Column({ name: 'type' })
+  @Column({ name: 'license_plate_photo_type' })
   private _typeName: string;
 
-  public get plate(): string {
-    return this._plate;
+  public get licensePlatePlate(): string {
+    return this._licensePlatePlate;
   }
 
   public get typeName(): string {

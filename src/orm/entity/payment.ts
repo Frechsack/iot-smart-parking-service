@@ -15,25 +15,25 @@ export class Payment {
   public price: number;
 
   @ManyToOne(() => Account, it => it.payments, { nullable: false, createForeignKeyConstraints: false })
-  @JoinColumn({ name: 'email' })
+  @JoinColumn({ name: 'account_email' })
   public account: Promise<Account>;
 
   @ManyToOne(() => LicensePlate, it => it.payments, { nullable: false, createForeignKeyConstraints: false })
-  @JoinColumn({ name: 'plate' })
+  @JoinColumn({ name: 'license_plate_plate' })
   public licensePlate: Promise<LicensePlate>;
 
-  @Column({ primary: true, name: 'email' })
-  private _email: string;
+  @Column({ primary: true, name: 'account_email' })
+  private _accountEmail: string;
 
-  @Column({ primary: true, name: 'plate' })
-  private _plate: string;
+  @Column({ primary: true, name: 'license_plate_plate' })
+  private _licensePlateplate: string;
 
-  public get email(): string{
-    return this._email;
+  public get accountEmail(): string{
+    return this._accountEmail;
   }
 
-  public get plate(): string{
-    return this._plate;
+  public get licensePlateplate(): string{
+    return this._licensePlateplate;
   }
 
 }

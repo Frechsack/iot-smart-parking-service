@@ -17,6 +17,16 @@ export class DeviceType {
   @OneToMany(() => DeviceType, it => it.parent)
   public children: Promise<DeviceType[]>;
 
+  /**
+  * transaction-id
+  */
+  @Column({ name: 'parent_name' })
+  private _parentName: string;
+
+  public get parentName(): string {
+    return this._parentName;
+  }
+
 }
 
 export enum DeviceTypeName {
