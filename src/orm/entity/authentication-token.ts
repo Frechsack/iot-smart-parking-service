@@ -1,4 +1,4 @@
-import { Entity, Column, ManyToOne, JoinColumn, PrimaryColumn } from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { Account } from './account';
 
 @Entity({name: "authentication_token"})
@@ -13,8 +13,7 @@ export class AuthenticationToken {
     @Column({type: "varchar", primary: true, nullable: false})
     public jwt: string;
 
-    // TODO: Bug?
-    @ManyToOne(() => Account, it => it.jwts, { nullable: false, createForeignKeyConstraints: false})
+    @ManyToOne(() => Account, it => it.jwts, { nullable: false, createForeignKeyConstraints: false })
     @JoinColumn({ name: 'email'})
     public owner: Promise<Account>;
 }

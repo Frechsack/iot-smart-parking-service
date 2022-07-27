@@ -4,10 +4,10 @@ import { Account } from './account';
 @Entity({ name: 'bank_connection'})
 export class BankConnection {
 
-  @Column({type: "varchar", primary: true, nullable: false})
+  @Column({type: "varchar", primary: true })
   public iban: String;
 
-  @OneToMany(()=>Account, (cringe)=>cringe.bankConnection)
+  @OneToMany(()=>Account, it => it.bankConnection)
   public accounts: Promise <Account[]>;
 
 }
