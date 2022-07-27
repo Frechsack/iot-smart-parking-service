@@ -18,7 +18,7 @@ export class DeviceType {
   public children: Promise<DeviceType[]>;
 
   /**
-  * transaction-id
+  * relation-id
   */
   @Column({ name: 'parent_name' })
   private _parentName: string;

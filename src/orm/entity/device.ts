@@ -22,10 +22,6 @@ export class Device {
   @Column({ name: 'device_type_name' })
   private _deviceTypeName: string;
 
-  public get deviceTypeName(): string {
-    return this._deviceTypeName;
-  }
-
   /**
   * relation-id
   */
@@ -34,5 +30,9 @@ export class Device {
 
   public get parkingLotNr(): string {
     return this._parkingLotNr;
+  }
+
+  public get deviceTypeName(): string {
+    return this._deviceTypeName;
   }
 }

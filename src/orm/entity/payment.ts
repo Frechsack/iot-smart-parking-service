@@ -22,9 +22,15 @@ export class Payment {
   @JoinColumn({ name: 'license_plate_plate' })
   public licensePlate: Promise<LicensePlate>;
 
+  /**
+  * relation-id
+  */
   @Column({ primary: true, name: 'account_email' })
   private _accountEmail: string;
 
+  /**
+  * relation-id
+  */ 
   @Column({ primary: true, name: 'license_plate_plate' })
   private _licensePlateplate: string;
 
