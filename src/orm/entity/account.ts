@@ -17,4 +17,7 @@ export class Account {
   @JoinColumn({name: 'iban'})
   public bankConnection: Promise<BankConnection>
 
+  @OneToMany(() => AuthenticationToken, it => it.owner)
+  public jwts: Promise<AuthenticationToken[]>;
+
 }
