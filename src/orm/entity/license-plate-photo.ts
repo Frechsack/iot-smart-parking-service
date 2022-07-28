@@ -22,20 +22,12 @@ export class LicensePlatePhoto {
   /**
   * relation-id
   */
-  @Column({ primary: true, name: 'license_plate' })
-  private _licensePlatePlate: string;
+  @Column({ primary: true, name: 'license_plate', nullable: false })
+  public readonly licensePlatePlate: string;
 
   /**
   * relation-id
   */
-  @Column({ name: 'license_plate_photo_type' })
-  private _typeName: string;
-
-  public get licensePlatePlate(): string {
-    return this._licensePlatePlate;
-  }
-
-  public get typeName(): string {
-    return this._typeName;
-  }
+  @Column({ name: 'license_plate_photo_type', nullable: false })
+  public readonly typeName: string;
 }

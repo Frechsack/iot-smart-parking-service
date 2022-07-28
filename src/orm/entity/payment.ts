@@ -26,20 +26,12 @@ export class Payment {
   * relation-id
   */
   @Column({ primary: true, name: 'account_email' })
-  private _accountEmail: string;
+  public readonly accountEmail: string;
 
   /**
   * relation-id
-  */ 
+  */
   @Column({ primary: true, name: 'license_plate_plate' })
-  private _licensePlateplate: string;
-
-  public get accountEmail(): string{
-    return this._accountEmail;
-  }
-
-  public get licensePlateplate(): string{
-    return this._licensePlateplate;
-  }
+  public readonly licensePlateplate: string;
 
 }

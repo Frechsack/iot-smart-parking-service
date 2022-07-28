@@ -27,20 +27,12 @@ export class Device {
   /**
   * relation-id
   */
-  @Column({ name: 'device_type_name' })
-  private _deviceTypeName: string;
+  @Column({ name: 'device_type_name', nullable: false })
+  public readonly  deviceTypeName: string;
 
   /**
   * relation-id
   */
-  @Column({ name: 'parking_lot_nr' })
-  private _parkingLotNr: string;
-
-  public get parkingLotNr(): string {
-    return this._parkingLotNr;
-  }
-
-  public get deviceTypeName(): string {
-    return this._deviceTypeName;
-  }
+  @Column({ name: 'parking_lot_nr', nullable: true })
+  public readonly  parkingLotNr: string | null;
 }

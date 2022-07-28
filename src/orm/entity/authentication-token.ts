@@ -20,10 +20,6 @@ export class AuthenticationToken {
     /**
     * relation-id
     */
-    @Column({ name: 'account_email' })
-    private _accountEmail: string;
-
-    public get accountEmail(): string {
-      return this._accountEmail;
-    }
+    @Column({ name: 'account_email', nullable: false })
+    public readonly accountEmail: string;
 }

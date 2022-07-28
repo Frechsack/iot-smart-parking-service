@@ -15,8 +15,6 @@ export class DeviceStatus{
   @JoinColumn({ name: 'device_mac'})
   public device: Promise<Device>;
 
-  @Column({ name: 'device_mac', primary: true})
-  private _deviceMac: string;
-
-
+  @Column({ name: 'device_mac', primary: true })
+  public readonly  deviceMac: string;
 }

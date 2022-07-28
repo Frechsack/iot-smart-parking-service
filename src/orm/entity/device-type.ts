@@ -1,6 +1,13 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
 import { Device } from "./device";
 
+export enum DeviceTypeName {
+  LAMP='LAMP',
+  PARKING_GUIDE_LAMP='PARKING_GUIDE_LAMP',
+  CWO_SENSOR='CWO_SENSOR',
+  SERVO='SERVO'
+}
+
 @Entity({ name: 'device_type' })
 export class DeviceType {
 
@@ -20,18 +27,7 @@ export class DeviceType {
   /**
   * relation-id
   */
-  @Column({ name: 'parent_name' })
-  private _parentName: string;
+  @Column({ name: 'parent_name', nullable: true })
+  public readonly  parentName: string | null;
 
-  public get parentName(): string {
-    return this._parentName;
-  }
-
-}
-
-export enum DeviceTypeName {
-  LAMP='LAMP',
-  PARKING_GUIDE_LAMP='PARKING_GUIDE_LAMP',
-  CWO_SENSOR='CWO_SENSOR',
-  SERVO='SERVO'
 }

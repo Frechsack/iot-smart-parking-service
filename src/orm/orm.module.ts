@@ -13,6 +13,17 @@ import { LicensePlatePhotoType } from './entity/license-plate-photo-type';
 import { ParkingLot } from './entity/parking-lot';
 import { Payment } from './entity/payment';
 import { AccountRepository } from './repository/account.repository';
+import { AuthenticationTokenRepository } from './repository/authentication-token.repository';
+import { BankConnectionRepository } from './repository/bank-connection.repository';
+import { DeviceInstructionRepository } from './repository/device-instruction.repository';
+import { DeviceStatusRepository } from './repository/device-status.repository';
+import { DeviceTypeRepository } from './repository/device-type.repository';
+import { DeviceRepository } from './repository/device.repository';
+import { LicensePlatePhotoTypeRepository } from './repository/license-plate-photo-type.repository';
+import { LicensePlatePhotoRepository } from './repository/license-plate-photo.repository';
+import { LicensePlateRepository } from './repository/license-plate.repository';
+import { ParkingLotRepository } from './repository/parking-lot.repository';
+import { PaymentRepository } from './repository/payment.repository';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Account]),
@@ -28,7 +39,33 @@ import { AccountRepository } from './repository/account.repository';
             TypeOrmModule.forFeature([DeviceStatus]),
             TypeOrmModule.forFeature([DeviceInstruction]),
           ],
-  providers: [AccountRepository],
-  exports: [ AccountRepository]
+  providers: [
+    AccountRepository,
+    AuthenticationTokenRepository,
+    BankConnectionRepository,
+    LicensePlateRepository,
+    LicensePlatePhotoRepository,
+    LicensePlatePhotoTypeRepository,
+    ParkingLotRepository,
+    PaymentRepository,
+    DeviceRepository,
+    DeviceTypeRepository,
+    DeviceStatusRepository,
+    DeviceInstructionRepository
+  ],
+  exports: [
+    AccountRepository,
+    AuthenticationTokenRepository,
+    BankConnectionRepository,
+    LicensePlateRepository,
+    LicensePlatePhotoRepository,
+    LicensePlatePhotoTypeRepository,
+    ParkingLotRepository,
+    PaymentRepository,
+    DeviceRepository,
+    DeviceTypeRepository,
+    DeviceStatusRepository,
+    DeviceInstructionRepository
+  ],
 })
 export class OrmModule {}
