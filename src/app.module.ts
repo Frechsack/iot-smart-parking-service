@@ -17,6 +17,8 @@ import { Payment } from './orm/entity/payment';
 import { ParkingLot } from './orm/entity/parking-lot';
 import { DeviceType } from './orm/entity/device-type';
 import { Device } from './orm/entity/device';
+import { DeviceStatus } from './orm/entity/device-status';
+import { DeviceInstruction } from './orm/entity/device-instruction';
 
 @Module({
   imports: [
@@ -39,7 +41,9 @@ import { Device } from './orm/entity/device';
           Payment,
           ParkingLot,
           Device,
-          DeviceType
+          DeviceType,
+          DeviceStatus,
+          DeviceInstruction
        ],
       synchronize: true
     }),

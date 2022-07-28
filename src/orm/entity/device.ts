@@ -1,4 +1,6 @@
-import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
+import { DeviceInstruction } from "./device-instruction";
+import { DeviceStatus } from "./device-status";
 import { DeviceType } from "./device-type";
 import { ParkingLot } from "./parking-lot";
 
@@ -15,6 +17,12 @@ export class Device {
   @ManyToOne(() => ParkingLot, it => it.devices, { nullable: true })
   @JoinColumn({ name: 'parking_lot_nr' })
   public parkingLot: Promise<ParkingLot | null>;
+
+  @OneToMany(() => DeviceStatus, it => it.device)
+  public status: Promise<DeviceStatus[]>
+
+  @OneToMany(() => DeviceInstruction, it => it.device)
+  public instructions: Promise<DeviceInstruction[]>
 
   /**
   * relation-id
