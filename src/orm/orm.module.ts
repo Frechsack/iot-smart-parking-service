@@ -4,6 +4,8 @@ import { Account } from './entity/account';
 import { AuthenticationToken } from './entity/authentication-token';
 import { BankConnection } from './entity/bank-connection';
 import { Device } from './entity/device';
+import { DeviceInstruction } from './entity/device-instruction';
+import { DeviceStatus } from './entity/device-status';
 import { DeviceType } from './entity/device-type';
 import { LicensePlate } from './entity/license-plate';
 import { LicensePlatePhoto } from './entity/license-plate-photo';
@@ -23,7 +25,8 @@ import { AccountRepository } from './repository/account.repository';
             TypeOrmModule.forFeature([Payment]),
             TypeOrmModule.forFeature([DeviceType]),
             TypeOrmModule.forFeature([Device]),
-
+            TypeOrmModule.forFeature([DeviceStatus]),
+            TypeOrmModule.forFeature([DeviceInstruction]),
           ],
   providers: [AccountRepository],
   exports: [ AccountRepository]
