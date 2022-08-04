@@ -24,11 +24,21 @@ export class Device {
   @OneToMany(() => DeviceInstruction, it => it.device)
   public instructions: Promise<DeviceInstruction[]>
 
+  @OneToMany(() => Device, it => it.parent)
+  public children: Promise<Device[]>;
+
+  @ManyToOne(() => Device, it => it.children, { nullable: true })
+  @JoinColumn({ name : 'parent_mac'})
+  public parent: Promise<Device | null>;
+
   /**
   * relation-id
   */
-  @Column({ name: 'device_type_name', nullable: false })
+  @Column({ name: 'device_type_name', nullable: false  })
   public readonly  deviceTypeName: string;
+
+  @Column({ name: 'parent_mac', nullable: true })
+  public readonly parentMac: string | null;
 
   /**
   * relation-id

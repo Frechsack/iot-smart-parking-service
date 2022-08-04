@@ -13,4 +13,8 @@ export class ParkingLotRepository extends AbstractRepository<ParkingLot> {
   ){
     super(repository);
   }
+
+  public async findOneByNr(nr: number): Promise<ParkingLot | null> {
+    return this.findOneBy({ nr: nr });
+  }
 }

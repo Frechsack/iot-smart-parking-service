@@ -23,6 +23,10 @@ export class DeviceTypeRepository extends AbstractRepository<DeviceType> {
     setTimeout(() => this.requireDefaults(),200);
   }
 
+  public async findOneByName(name: DeviceTypeName): Promise<DeviceType> {
+    return this.findOneBy({name: name});
+  }
+
   private async requireDefaults(){
     const savedTypes = await this.find();
     const missingTypes = this.defaults
@@ -30,7 +34,7 @@ export class DeviceTypeRepository extends AbstractRepository<DeviceType> {
     .filter(def => savedTypes.find(it => it.name === def.name && it.parentName == def.parent) === undefined)
     // Sortiere - Entitäten ohne parent zuerst einfügen
     .sort((lhs, rhs) => (lhs.parent === undefined && rhs.parent === undefined) ? 0 : (lhs.parent === undefined ? -1 : 1));
-    
+
     for(let missingType of missingTypes) {
       const entity = new DeviceType();
       entity.name = missingType.name;
