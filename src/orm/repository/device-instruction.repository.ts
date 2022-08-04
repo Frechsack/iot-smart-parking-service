@@ -14,7 +14,7 @@ export class DeviceInstructionRepository extends AbstractRepository<DeviceInstru
     super(repository);
   }
 
-  public async findLatestInstruction(mac: string): Promise<DeviceInstruction | null> {
+  public async findLatestById(mac: string): Promise<DeviceInstruction | null> {
     return this.findOne({ where: { deviceMac: mac }, order: { date: 'DESC' }});
   }
 }

@@ -13,4 +13,8 @@ export class DeviceStatusRepository extends AbstractRepository<DeviceStatus> {
   ){
     super(repository);
   }
+
+  public async findLatestById(mac: string): Promise<DeviceStatus | null> {
+    return this.findOne({ where: { deviceMac: mac }, order: { date: 'DESC' }});
+  }
 }

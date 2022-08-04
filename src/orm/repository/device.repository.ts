@@ -13,4 +13,13 @@ export class DeviceRepository extends AbstractRepository<Device> {
   ){
     super(repository);
   }
+
+  public async findOneByMac(mac: string): Promise<Device | null> {
+    return this.findOneBy({ mac: mac });
+  }
+
+  public async existsByMac(mac: string): Promise<boolean> {
+    const element = await this.findOneBy({ mac: mac });
+    return element !== null;
+  }
 }

@@ -8,7 +8,7 @@ export class DeviceInstruction {
 public date: Date;
 
 @Column({type:  "varchar", nullable: false} )
-public instruction: String;
+public instruction: string;
 
 @ManyToOne(()=> Device, it => it.instructions)
 @JoinColumn({ name: 'device_mac'})
