@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { filter } from 'rxjs';
 import { CommunicationService } from 'src/core/service/communication.service';
+import { LoggerService } from 'src/core/service/logger.service';
 import { Device } from 'src/orm/entity/device';
 import { DeviceInstruction } from 'src/orm/entity/device-instruction';
 import { DeviceStatus } from 'src/orm/entity/device-status';
@@ -13,6 +13,9 @@ import { DeviceRepository } from 'src/orm/repository/device.repository';
 import { ParkingLotRepository } from 'src/orm/repository/parking-lot.repository';
 import { EntityManager } from 'typeorm';
 
+/**
+* Stellt Standartfunktionen für die Anlage und modifizierung von Geräten, deren Anweisungen und Status bereit.
+*/
 @Injectable()
 export class DeviceService {
 
@@ -22,57 +25,85 @@ export class DeviceService {
     private readonly deviceInstructionRepository: DeviceInstructionRepository,
     private readonly deviceTypeRepository: DeviceTypeRepository,
     private readonly parkingLotRepository: ParkingLotRepository,
-    private readonly communicationService: CommunicationService
+    private readonly communicationService: CommunicationService,
+    private readonly loggerService: LoggerService
   ) {
+    this.loggerService.context = DeviceStatus.name;
     // Externe Informationen speichern
     this.communicationService.registerLane
-      .pipe(filter(it => it.isExternalMessage()))
       .subscribe(it => this.registerDevice(it.mac,it.deviceType,it.parkingLotNr,it.parentDeviceMac));
     this.communicationService.statusLane
-      .pipe(filter(it => it.isExternalMessage()))
       .subscribe(it => this.saveDeviceStatus(it.mac, it.status));
     this.communicationService.instructionLane
-      .pipe(filter(it => it.isExternalMessage()))
       .subscribe(it => this.saveDeviceInstruction(it.mac, it.instruction));
 
     // Füge standart-entitäten ein.
     this.deviceTypeRepository.insertDefaults();
   }
 
+  /**
+  * Sichert eine Geräteanweisung in der Datenbank.
+  * @param mac Die mac des Geräts, deren Anweisung gespeichert werden soll.
+  * @param instruction Die zu speichernde Anweisung.
+  * @returns Gibt das gespeicherte Datenbankobjekt zurück.
+  */
   private async saveDeviceInstruction(mac: string, instruction: string): Promise<DeviceInstruction>{
-    // Prüfe ob Gerät vorhanden
-    if(!(await this.deviceRepository.existsByMac(mac)))
-      this.thrownUnknowDeviceException(mac);
-    // Füge Anweisung hinzu
-    const deviceInstruction = new DeviceInstruction();
-    deviceInstruction.date = new Date();
-    deviceInstruction.instruction = instruction;
-    deviceInstruction.device = Promise.resolve((await this.deviceRepository.findOneByMac(mac))!);
-    return await this.deviceInstructionRepository.save(deviceInstruction);
+    try {
+      // Prüfe ob Gerät vorhanden
+      if(!(await this.deviceRepository.existsByMac(mac)))
+        this.thrownUnknowDeviceException(mac);
+      // Füge Anweisung hinzu
+      let deviceInstruction = new DeviceInstruction();
+      deviceInstruction.date = new Date();
+      deviceInstruction.instruction = instruction;
+      deviceInstruction.device = Promise.resolve((await this.deviceRepository.findOneByMac(mac))!);
+      deviceInstruction = await this.deviceInstructionRepository.save(deviceInstruction);
+      this.loggerService.log(`Update of device-instruction completed, mac: "${mac}", instruction: "${instruction}"`);
+      return deviceInstruction;
+    }
+    catch(e) {
+      this.loggerService.error(`Update of device-instruction failed, error: "${e}"`);
+      throw e;
+    }
   }
 
-
+  /**
+  * Sichert einen Gerätestatus in der Datenbank.
+  * @param mac Die mac des Geräts, deren Status gespeichert werden soll.
+  * @param status Der zu sichernde Status.
+  * @returns Gibt das gespeicherte Datenbankobjekt zurück.
+  */
   private async saveDeviceStatus(mac: string, status: string): Promise<DeviceStatus> {
-
-    // Prüfe ob Gerät vorhanden
-    if(!(await this.deviceRepository.existsByMac(mac)))
-      this.thrownUnknowDeviceException(mac);
-    // Füge Status hinzu
-    const deviceStatus = new DeviceStatus();
-    deviceStatus.date = new Date();
-    deviceStatus.status = status;
-    deviceStatus.device = Promise.resolve((await this.deviceRepository.findOneByMac(mac))!);
-    this.deviceStatusRepository.save(deviceStatus);
-    return deviceStatus;
+    try {
+      // Prüfe ob Gerät vorhanden
+      if(!(await this.deviceRepository.existsByMac(mac)))
+        this.thrownUnknowDeviceException(mac);
+      // Füge Status hinzu
+      let deviceStatus = new DeviceStatus();
+      deviceStatus.date = new Date();
+      deviceStatus.status = status;
+      deviceStatus.device = Promise.resolve((await this.deviceRepository.findOneByMac(mac))!);
+      deviceStatus = await this.deviceStatusRepository.save(deviceStatus);
+      this.loggerService.log(`Update of device-status completed, mac: "${mac}", status: "${status}"`);
+      return deviceStatus;
+    }
+    catch(e){
+      this.loggerService.log(`Update of device-status failed, error: "${e}"`);
+      throw e;
+    }
   }
 
+  /**
+  * Wirft eine Exception, sollte ein Gerät in der Datenbank nicht gefunden worden sein.
+  * @param mac Die mac des nicht gefundenen Geräts.
+  */
   private thrownUnknowDeviceException(mac: string){
     throw new Error(`Unknown device, mac: "${mac}"`);
   }
 
 
   /**
-  * Registriert ein neues Gerät in der Datenbank.
+  * Registriert ein neues Gerät in der Datenbank. Die Funktion wird in einer Transaktion durchgeführt.
   * @param mac Die mac des zu erstellenden Geräts.
   * @param deviceTypeName Der Gerätetyp.
   * @param parkingLotNr Die optionale Parkplatzzuordnung.
@@ -124,7 +155,15 @@ export class DeviceService {
       device.parent = Promise.resolve(parentDevice === null ? null : parentDevice);
       return await deviceRepository.save(device)
     }
-    return await this.deviceRepository.runTransaction(transaction);
+    try {
+      const device = await this.deviceRepository.runTransaction(transaction);
+      this.loggerService.log(`Register of device completed, mac: "${device.mac}"`);
+      return device;
+    }
+    catch (e) {
+      this.loggerService.error(`Register of device failed, error: "${e}"`);
+      throw e;
+    }
   }
 
 }

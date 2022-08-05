@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { LicensePlatePhotoType, LicensePlatePhotoTypeName, valueOf } from '../entity/license-plate-photo-type';
 import { AbstractRepository } from './abstract.repository';
 
@@ -12,6 +12,15 @@ export class LicensePlatePhotoTypeRepository extends AbstractRepository<LicenseP
     public readonly repository: Repository<LicensePlatePhotoType>
   ){
     super(repository);
+  }
+
+  /**
+  * Erstellt eine Repository, welches in Transaktionen verwendet werden kann.
+  * @param manager Der EntityManager, welcher die Transaktion durchführt.
+  * @returns Gibt das zu verwendende Repository zurück.
+  */
+  public forTransaction(manager: EntityManager): LicensePlatePhotoTypeRepository {
+    return new LicensePlatePhotoTypeRepository(manager.getRepository(LicensePlatePhotoType));
   }
 
   public async findOneByName(name: LicensePlatePhotoTypeName): Promise<LicensePlatePhotoType | null> {

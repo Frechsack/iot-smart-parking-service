@@ -14,6 +14,11 @@ export class ParkingLotRepository extends AbstractRepository<ParkingLot> {
     super(repository);
   }
 
+  /**
+  * Erstellt eine Repository, welches in Transaktionen verwendet werden kann.
+  * @param manager Der EntityManager, welcher die Transaktion durchführt.
+  * @returns Gibt das zu verwendende Repository zurück.
+  */
   public forTransaction(manager: EntityManager): ParkingLotRepository {
     return new ParkingLotRepository(manager.getRepository(ParkingLot));
   }

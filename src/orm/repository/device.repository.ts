@@ -14,6 +14,11 @@ export class DeviceRepository extends AbstractRepository<Device> {
     super(repository);
   }
 
+  /**
+  * Erstellt eine Repository, welches in Transaktionen verwendet werden kann.
+  * @param manager Der EntityManager, welcher die Transaktion durchführt.
+  * @returns Gibt das zu verwendende Repository zurück.
+  */
   public forTransaction(manager: EntityManager): DeviceRepository {
     return new DeviceRepository(manager.getRepository(Device));
   }

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { DeviceInstruction } from '../entity/device-instruction';
 import { AbstractRepository } from './abstract.repository';
 
@@ -16,5 +16,14 @@ export class DeviceInstructionRepository extends AbstractRepository<DeviceInstru
 
   public async findLatestById(mac: string): Promise<DeviceInstruction | null> {
     return this.findOne({ where: { device: { mac: mac } }, order: { date: 'DESC' }});
+  }
+
+  /**
+  * Erstellt eine Repository, welches in Transaktionen verwendet werden kann.
+  * @param manager Der EntityManager, welcher die Transaktion durchführt.
+  * @returns Gibt das zu verwendende Repository zurück.
+  */
+  public forTransaction(manager: EntityManager): DeviceInstructionRepository {
+    return new DeviceInstructionRepository(manager.getRepository(DeviceInstruction));
   }
 }
