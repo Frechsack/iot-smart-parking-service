@@ -12,17 +12,16 @@ export class LicensePlatePhotoTypeRepository extends AbstractRepository<LicenseP
     public readonly repository: Repository<LicensePlatePhotoType>
   ){
     super(repository);
-    this.requireDefaults();
   }
 
   public async findOneByName(name: LicensePlatePhotoTypeName): Promise<LicensePlatePhotoType | null> {
     return this.findOneBy({ name: name });
   }
 
-  private async requireDefaults(){
+  public async insertDefaults(){
     for(const photoType in LicensePlatePhotoTypeName){
       if(await this.findOneByName(valueOf(photoType)) !== null) continue;
-      
+
       const element = new LicensePlatePhotoType();
       element.name = valueOf(photoType);
       this.save(element);

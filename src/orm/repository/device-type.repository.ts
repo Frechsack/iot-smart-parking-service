@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { DeviceType, DeviceTypeName } from '../entity/device-type';
 import { AbstractRepository } from './abstract.repository';
 
@@ -19,15 +19,17 @@ export class DeviceTypeRepository extends AbstractRepository<DeviceType> {
     public readonly repository: Repository<DeviceType>
   ){
     super(repository);
-    // TypeOrm benötigt eine kurze Zeit
-    setTimeout(() => this.requireDefaults(),200);
+  }
+
+  public forTransaction(manager: EntityManager): DeviceTypeRepository {
+    return new DeviceTypeRepository(manager.getRepository(DeviceType));
   }
 
   public async findOneByName(name: DeviceTypeName): Promise<DeviceType> {
     return (await this.findOneBy({name: name}))!;
   }
 
-  private async requireDefaults(){
+  public async insertDefaults(){
     const requiredDefaults = this.defaults
     // Sortiere - Entitäten ohne parent zuerst einfügen
     .sort((lhs, rhs) => (lhs.parent === undefined && rhs.parent === undefined) ? 0 : (lhs.parent === undefined ? -1 : 1));

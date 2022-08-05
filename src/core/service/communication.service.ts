@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { connect, MqttClient } from "mqtt";
-import { Subject } from 'rxjs';
+import { filter, Subject } from 'rxjs';
 import { InstructionMessage } from '../messages/instruction-message';
+import { MessageSource } from '../messages/message';
 import { RegisterMessage } from '../messages/register-message';
 import { ScanMessage } from '../messages/scan-message';
 import { StatusMessage } from '../messages/status-message';
@@ -22,44 +23,22 @@ export class CommunicationService {
   /**
   * Quelle für Nachrichten auf "instruction"-lane.
   */
-  private readonly instructionLaneSource = new Subject<InstructionMessage<any>>();
-
-  /**
-  * Observable mit allen per "instruction"-lane empfangenen Nachrichten. Der Inhalt der Nachrichten wurde noch nicht verarbeitet d.H. nicht in der Datenbank persistiert etc.
-  * @deprecated Nachrichten auf der "instruction"-lane sollten nicht abgehört werden.
-  */
-  public readonly instructionLane = this.instructionLaneSource.asObservable();
+  public readonly instructionLane = new Subject<InstructionMessage<any>>();
 
   /**
   * Quelle für Nachrichten auf "status"-lane.
   */
-  private readonly statusLaneSource = new Subject<StatusMessage<any>>();
-
-  /**
-  * Observable mit allen per "status"-lane empfangenen Nachrichten. Der Inhalt der Nachrichten wurde noch nicht verarbeitet d.H. nicht in der Datenbank persistiert etc.
-  */
-  public readonly statusLane = this.statusLaneSource.asObservable();
+  public readonly statusLane = new Subject<StatusMessage<any>>();
 
   /**
   * Quelle für Nachrichten auf "scan"-lane.
   */
-  private readonly scanLaneSource = new Subject<ScanMessage>();
-
-  /**
-  * Observable mit allen per "scan"-lane empfangenen Nachrichten. Der Inhalt der Nachrichten wurde noch nicht verarbeitet d.H. nicht in der Datenbank persistiert etc.
-  * @deprecated Nachrichten auf der "scan"-lane sollten nicht abgehört werden.
-  */
-  public readonly scanLane = this.scanLaneSource.asObservable();
+  public readonly scanLane = new Subject<ScanMessage>();
 
   /**
   * Quelle für Nachrichten auf "register"-lane.
   */
-  private readonly registerLaneSource = new Subject<RegisterMessage>();
-
-  /**
-  * Observable mit allen per "register"-lane empfangenen Nachrichten. Der Inhalt der Nachrichten wurde noch nicht verarbeitet d.H. nicht in der Datenbank persistiert etc.
-  */
-  public readonly registerLane = this.registerLaneSource.asObservable();
+  public readonly registerLane = new Subject<RegisterMessage>();
 
 
   constructor(
@@ -67,43 +46,37 @@ export class CommunicationService {
      loggerService: LoggerService
    ){
     loggerService.context = CommunicationService.name;
-    this.mqttClient = connect(`mqtt://${configService.get('MQTT_HOST')}:${configService.get('MQTT_PORT')}`,{keepalive: 10, reconnectPeriod: 1000});
+    this.mqttClient = connect(`mqtt://${configService.get('MQTT_HOST')}:${configService.get('MQTT_PORT')}`,{ keepalive: 10, reconnectPeriod: 1000 });
     this.mqttClient.subscribe('instruction');
     this.mqttClient.subscribe('status');
     this.mqttClient.subscribe('scan');
     this.mqttClient.subscribe('register');
 
+    // Wandel extern empfangende Nachrichten per MQTT in Messages um.
     this.mqttClient.on('message',(topic: string, message: Buffer) => {
       try {
         if(topic === 'instruction')
-          this.instructionLaneSource.next(InstructionMessage.fromPayload(message.toString()));
+          this.instructionLane.next(InstructionMessage.fromPayload(message.toString(),MessageSource.EXTERNAL));
         else if(topic === 'status')
-          this.statusLaneSource.next(StatusMessage.fromPayload(message.toString()));
+          this.statusLane.next(StatusMessage.fromPayload(message.toString(),MessageSource.EXTERNAL));
         else if(topic === 'scan')
-          this.scanLaneSource.next(new ScanMessage());
+          this.scanLane.next(new ScanMessage(MessageSource.EXTERNAL));
         else if(topic === 'register')
-          this.registerLaneSource.next(RegisterMessage.fromPayload(message.toString()));
+          this.registerLane.next(RegisterMessage.fromPayload(message.toString(),MessageSource.EXTERNAL));
       }
       catch (error){
         loggerService.warn(`Invalid message on lane: "${topic}", message: "${message.toString()}", error: "${error}"`);
       }
     });
-  }
 
-  /**
-  * Verschickt per MQTT eine neue Anweisung.
-  * @param mac Das Gerät, welches die Anweisung erhalten soll.
-  * @param instruction Die zu sendende Anweisung.
-  */
-  public async sendInstruction(mac: string, instruction: any) {
-    this.mqttClient.publish('instruction', `${mac}:${instruction}`);
+    // Wandel interne Nachrichten in MQTT-Nachrichten um.
+    this.instructionLane.pipe(filter(it => it.isInternalMessage()))
+      .subscribe(it => this.mqttClient.publish('instruction',`${it.mac}:${it.instruction}`));
+    this.statusLane.pipe(filter(it => it.isInternalMessage()))
+      .subscribe(it => this.mqttClient.publish('status',`${it.mac}:${it.status}`));
+    this.registerLane.pipe(filter(it => it.isInternalMessage()))
+      .subscribe(it => this.mqttClient.publish('register',`${it.mac}:${it.deviceType}:${it.parkingLotNr}:${it.parentDeviceMac}`));
+    this.instructionLane.pipe(filter(it => it.isInternalMessage()))
+      .subscribe(() => this.mqttClient.publish('scan',''));
   }
-
-  /**
-  * Verschickt per MQTT die Anweisung, alle Sensoren einzumessen. Die lane "register" sollte als Konsequenz auf diesen Aufruf abgehört werden.
-  */
-  public async scan() {
-    this.mqttClient.publish('scan','');
-  }
-
 }

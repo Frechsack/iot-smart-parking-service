@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { Device } from '../entity/device';
 import { AbstractRepository } from './abstract.repository';
 
@@ -12,6 +12,10 @@ export class DeviceRepository extends AbstractRepository<Device> {
     public readonly repository: Repository<Device>
   ){
     super(repository);
+  }
+
+  public forTransaction(manager: EntityManager): DeviceRepository {
+    return new DeviceRepository(manager.getRepository(Device));
   }
 
   public async findOneByMac(mac: string): Promise<Device | null> {

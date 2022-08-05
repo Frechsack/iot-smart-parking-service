@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { ParkingLot } from '../entity/parking-lot';
 import { AbstractRepository } from './abstract.repository';
 
@@ -12,6 +12,10 @@ export class ParkingLotRepository extends AbstractRepository<ParkingLot> {
     public readonly repository: Repository<ParkingLot>
   ){
     super(repository);
+  }
+
+  public forTransaction(manager: EntityManager): ParkingLotRepository {
+    return new ParkingLotRepository(manager.getRepository(ParkingLot));
   }
 
   public async findOneByNr(nr: number): Promise<ParkingLot | null> {
