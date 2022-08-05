@@ -19,15 +19,6 @@ export class LicensePlatePhoto {
   @JoinColumn({ name: 'license_plate_photo_type' })
   public type: Promise<LicensePlatePhotoType>;
 
-  /**
-  * relation-id
-  */
-  @Column({ primary: true, name: 'license_plate', nullable: false })
-  public readonly licensePlatePlate: string;
-
-  /**
-  * relation-id
-  */
-  @Column({ name: 'license_plate_photo_type', nullable: false })
-  public readonly typeName: string;
+  @Column({ primary: true, name: 'license_plate' })
+  private licensePlateKey: string;
 }

@@ -1,3 +1,5 @@
+import { Token } from './token';
+
 export class InstructionMessage<E> {
 
   constructor(
@@ -6,10 +8,13 @@ export class InstructionMessage<E> {
   ){}
 
   public static fromPayload(message: string): InstructionMessage<any>{
-    const items = message.split(':');
-    if(items.length !== 2)
+    const tokens = Token.parseTokens(message,2);
+    if(tokens[0].isEmpty() || tokens[1].isEmpty())
       throw new Error('Invalid message: ' + message);
-    return new InstructionMessage(items[0].trim(),items[1].trim());
+
+    const mac = tokens[0].toString();
+    const instruction = tokens[1].toString();
+    return new InstructionMessage(mac,instruction);
   }
 
 }

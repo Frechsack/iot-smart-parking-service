@@ -24,22 +24,22 @@ export class DeviceTypeRepository extends AbstractRepository<DeviceType> {
   }
 
   public async findOneByName(name: DeviceTypeName): Promise<DeviceType> {
-    return this.findOneBy({name: name});
+    return (await this.findOneBy({name: name}))!;
   }
 
   private async requireDefaults(){
-    const savedTypes = await this.find();
-    const missingTypes = this.defaults
-    // Nur Entitäen welche nicht in DB sind
-    .filter(def => savedTypes.find(it => it.name === def.name && it.parentName == def.parent) === undefined)
+    const requiredDefaults = this.defaults
     // Sortiere - Entitäten ohne parent zuerst einfügen
     .sort((lhs, rhs) => (lhs.parent === undefined && rhs.parent === undefined) ? 0 : (lhs.parent === undefined ? -1 : 1));
 
-    for(let missingType of missingTypes) {
-      const entity = new DeviceType();
-      entity.name = missingType.name;
-      entity.parent = missingType.parent === undefined ? Promise.resolve(null) : Promise.resolve(await this.findOneBy({ name: missingType.parent }));
-      await this.save(entity);
+    for(let missingType of requiredDefaults) {
+      let deviceType = await this.findOneByName(missingType.name);
+      if(deviceType != null) continue;
+
+      deviceType = new DeviceType();
+      deviceType.name = missingType.name;
+      deviceType.parent = missingType.parent === undefined ? Promise.resolve(null) : Promise.resolve(await this.findOneByName(missingType.parent));
+      await this.save(deviceType);
     }
   }
 }

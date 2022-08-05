@@ -8,10 +8,14 @@ export enum DeviceTypeName {
   SERVO='SERVO'
 }
 
+export function valueOf(name: string): DeviceTypeName{
+  return DeviceTypeName[name as keyof typeof DeviceTypeName];
+}
+
 @Entity({ name: 'device_type' })
 export class DeviceType {
 
-  @Column({ type: 'varchar', primary: true, update: false })
+  @Column({ type: 'varchar', primary: true, update: false, enum: DeviceTypeName })
   public name: DeviceTypeName;
 
   @OneToMany(() => Device, it => it.type )
@@ -23,11 +27,4 @@ export class DeviceType {
 
   @OneToMany(() => DeviceType, it => it.parent)
   public children: Promise<DeviceType[]>;
-
-  /**
-  * relation-id
-  */
-  @Column({ name: 'parent_name', nullable: true })
-  public readonly  parentName: string | null;
-
 }

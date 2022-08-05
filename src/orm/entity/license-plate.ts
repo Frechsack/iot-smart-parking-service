@@ -18,10 +18,4 @@ export class LicensePlate {
 
   @OneToMany(() => Payment, it => it.licensePlate)
   public payments: Promise<Payment[]>;
-
-  /**
-  * relation-id
-  */
-  @Column({ name: 'account_email', nullable: false })
-  public readonly  accountEmail: string;
 }

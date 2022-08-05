@@ -4,16 +4,16 @@ import { Device } from "./device";
 @Entity({ name: "device_instruction"})
 export class DeviceInstruction {
 
-@Column({type:  "datetime", primary: true} )
-public date: Date;
+  @Column({type:  "datetime", primary: true} )
+  public date: Date;
 
-@Column({type:  "varchar", nullable: false} )
-public instruction: string;
+  @Column({type:  "varchar", nullable: false} )
+  public instruction: string;
 
-@ManyToOne(()=> Device, it => it.instructions)
-@JoinColumn({ name: 'device_mac'})
-public device: Promise<Device>
+  @ManyToOne(()=> Device, it => it.instructions)
+  @JoinColumn({ name: 'device_mac'})
+  public device: Promise<Device>
 
-@Column({ name: 'device_mac', primary: true })
-public readonly deviceMac: string;
+  @Column({ name: 'device_mac', primary: true })
+  private deviceKey: string;
 }

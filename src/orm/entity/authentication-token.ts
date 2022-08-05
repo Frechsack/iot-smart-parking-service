@@ -16,10 +16,4 @@ export class AuthenticationToken {
     @ManyToOne(() => Account, it => it.jwts, { nullable: false, createForeignKeyConstraints: false })
     @JoinColumn({ name: 'account_email'})
     public owner: Promise<Account>;
-
-    /**
-    * relation-id
-    */
-    @Column({ name: 'account_email', nullable: false })
-    public readonly accountEmail: string;
 }

@@ -15,6 +15,6 @@ export class DeviceInstructionRepository extends AbstractRepository<DeviceInstru
   }
 
   public async findLatestById(mac: string): Promise<DeviceInstruction | null> {
-    return this.findOne({ where: { deviceMac: mac }, order: { date: 'DESC' }});
+    return this.findOne({ where: { device: { mac: mac } }, order: { date: 'DESC' }});
   }
 }

@@ -26,10 +26,4 @@ export class Account {
   @OneToMany(() => Payment, it => it.account)
   public payments: Promise<Payment>;
 
-  /**
-  * relation-id
-  */
-  @Column({ name: 'bank_connection_iban', nullable: true })
-  public readonly bankConnectionIban: string | null;
-
 }

@@ -30,19 +30,4 @@ export class Device {
   @ManyToOne(() => Device, it => it.children, { nullable: true })
   @JoinColumn({ name : 'parent_mac'})
   public parent: Promise<Device | null>;
-
-  /**
-  * relation-id
-  */
-  @Column({ name: 'device_type_name', nullable: false  })
-  public readonly  deviceTypeName: string;
-
-  @Column({ name: 'parent_mac', nullable: true })
-  public readonly parentMac: string | null;
-
-  /**
-  * relation-id
-  */
-  @Column({ name: 'parking_lot_nr', nullable: true })
-  public readonly  parkingLotNr: string | null;
 }

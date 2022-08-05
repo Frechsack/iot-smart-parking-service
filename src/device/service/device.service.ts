@@ -30,7 +30,7 @@ export class DeviceService {
   * @param parkingLotNr Die optionale Parkplatzzuordnung.
   * @param parentDeviceMac Die optionale mac des übergeordneten Geräts.
   */
-  private async registerDevice(mac: string, deviceTypeName: DeviceTypeName, parkingLotNr: number | null = undefined, parentDeviceMac: string | null = undefined): Promise<Device>{
+  private async registerDevice(mac: string, deviceTypeName: DeviceTypeName, parkingLotNr: number | null | undefined = undefined, parentDeviceMac: string | null | undefined = undefined): Promise<Device>{
 
     // Prüfe ob eigene & eltern element gleiche mac haben
     if(mac === parentDeviceMac)
@@ -58,7 +58,9 @@ export class DeviceService {
     }
 
     // Finde Gerätetyp.
-    const deviceType: DeviceType = await this.deviceTypeRepository.findOneByName(deviceTypeName);
+    const deviceType: DeviceType | null = await this.deviceTypeRepository.findOneByName(deviceTypeName);
+
+
 
     // Erstelle Gerät
     let device: Device | null = await this.deviceRepository.findOneByMac(mac);

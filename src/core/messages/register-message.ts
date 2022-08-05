@@ -1,4 +1,5 @@
-import { DeviceTypeName } from "src/orm/entity/device-type";
+import { DeviceTypeName, valueOf } from "src/orm/entity/device-type";
+import { Token } from './token';
 
 export class RegisterMessage {
 
@@ -10,28 +11,14 @@ export class RegisterMessage {
   ){}
 
   public static fromPayload(message: string): RegisterMessage {
-    const items = message.split(':');
-    if(items.length <= 1)
-      throw new Error('Invalid message: ' + message);
+    const tokens = Token.parseTokens(message,4);
+    if(tokens[0].isEmpty() || tokens[1].isEmpty())
+      throw new Error('Invalid register-message, message: "' + message + '"' );
 
-    const mac: string = items[0].trim();
-    const deviceType: DeviceTypeName = DeviceTypeName[items[1].trim()];
-    if(deviceType === undefined)
-      throw new Error('Invalid deviceType: ' + items[1].trim());
-
-    let parkingLotNr: number | undefined;
-    try {
-      if((items.length >= 3) && (items[2].trim() !== ''))
-
-        parkingLotNr = Number(items[2].trim())
-      else
-        parkingLotNr = undefined;
-    } catch(error) {
-      throw new Error(`Invalid parkingLotNr: "${parkingLotNr}"`);
-    }
-
-
-    const parentDeviceMac = (items.length === 4) && (items[3].trim() !== '') ? items[3].trim() : undefined;
+    const mac = tokens[0].toString();
+    const deviceType = valueOf(tokens[1].toString());
+    const parkingLotNr = tokens[2].isPresent() ? tokens[2].toNumber() : undefined;
+    const parentDeviceMac = tokens[3].isPresent() ? tokens[3].toString() : undefined;
     return new RegisterMessage(mac, deviceType, parkingLotNr, parentDeviceMac);
   }
 
