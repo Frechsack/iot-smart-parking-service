@@ -28,7 +28,7 @@ export class DeviceService {
     private readonly communicationService: CommunicationService,
     private readonly loggerService: LoggerService
   ) {
-    this.loggerService.context = DeviceStatus.name;
+    this.loggerService.context = DeviceService.name;
     // Externe Informationen speichern
     this.communicationService.registerLane
       .subscribe(it => this.registerDevice(it.mac,it.deviceType,it.parkingLotNr,it.parentDeviceMac));
