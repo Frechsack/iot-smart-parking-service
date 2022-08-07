@@ -10,6 +10,7 @@ import { DeviceType } from './entity/device-type';
 import { LicensePlate } from './entity/license-plate';
 import { LicensePlatePhoto } from './entity/license-plate-photo';
 import { LicensePlatePhotoType } from './entity/license-plate-photo-type';
+import { LicensePlateStatus } from './entity/license-plate-status';
 import { ParkingLot } from './entity/parking-lot';
 import { Payment } from './entity/payment';
 import { AccountRepository } from './repository/account.repository';
@@ -21,6 +22,7 @@ import { DeviceTypeRepository } from './repository/device-type.repository';
 import { DeviceRepository } from './repository/device.repository';
 import { LicensePlatePhotoTypeRepository } from './repository/license-plate-photo-type.repository';
 import { LicensePlatePhotoRepository } from './repository/license-plate-photo.repository';
+import { LicensePlateStatusRepository } from './repository/license-plate-status.repository';
 import { LicensePlateRepository } from './repository/license-plate.repository';
 import { ParkingLotRepository } from './repository/parking-lot.repository';
 import { PaymentRepository } from './repository/payment.repository';
@@ -30,6 +32,7 @@ import { PaymentRepository } from './repository/payment.repository';
             TypeOrmModule.forFeature([AuthenticationToken]),
             TypeOrmModule.forFeature([BankConnection]),
             TypeOrmModule.forFeature([LicensePlate]),
+            TypeOrmModule.forFeature([LicensePlateStatus]),
             TypeOrmModule.forFeature([LicensePlatePhoto]),
             TypeOrmModule.forFeature([LicensePlatePhotoType]),
             TypeOrmModule.forFeature([ParkingLot]),
@@ -51,7 +54,8 @@ import { PaymentRepository } from './repository/payment.repository';
     DeviceRepository,
     DeviceTypeRepository,
     DeviceStatusRepository,
-    DeviceInstructionRepository
+    DeviceInstructionRepository,
+    LicensePlateStatusRepository
   ],
   exports: [
     AccountRepository,
@@ -65,7 +69,8 @@ import { PaymentRepository } from './repository/payment.repository';
     DeviceRepository,
     DeviceTypeRepository,
     DeviceStatusRepository,
-    DeviceInstructionRepository
+    DeviceInstructionRepository,
+    LicensePlateStatusRepository
   ],
 })
 export class OrmModule {}

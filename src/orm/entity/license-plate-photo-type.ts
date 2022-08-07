@@ -13,7 +13,7 @@ export function valueOf(name: string): LicensePlatePhotoTypeName{
 @Entity({ name: 'license_plate_photo_type' })
 export class LicensePlatePhotoType {
 
-  @Column({ type: 'varchar', primary: true, update: false, enum: LicensePlatePhotoTypeName })
+  @Column({ type: 'varchar', primary: true, update: false })
   public name: LicensePlatePhotoTypeName;
 
   @OneToMany(() => LicensePlatePhoto, it => it.type)

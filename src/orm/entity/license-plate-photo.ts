@@ -8,7 +8,7 @@ export class LicensePlatePhoto {
   @Column({ type: 'longblob', nullable: false})
   public image: Uint8Array;
 
-  @Column({ type: 'datetime', nullable: false})
+  @Column({ type: 'datetime', primary: true})
   public date: Date;
 
   @ManyToOne(() => LicensePlate, it => it.photos, { nullable: false })

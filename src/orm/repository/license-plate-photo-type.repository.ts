@@ -12,6 +12,7 @@ export class LicensePlatePhotoTypeRepository extends AbstractRepository<LicenseP
     public readonly repository: Repository<LicensePlatePhotoType>
   ){
     super(repository);
+    this.insertDefaults();
   }
 
   /**
@@ -26,6 +27,7 @@ export class LicensePlatePhotoTypeRepository extends AbstractRepository<LicenseP
   public async findOneByName(name: LicensePlatePhotoTypeName): Promise<LicensePlatePhotoType | null> {
     return this.findOneBy({ name: name });
   }
+
 
   public async insertDefaults(){
     for(const photoType in LicensePlatePhotoTypeName){
