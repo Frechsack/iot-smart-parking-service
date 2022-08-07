@@ -25,6 +25,8 @@ export class PlateDetectionService {
 
   private readonly mutexMap = new Map<LicensePlatePhotoTypeName,Map<string, Mutex>>();
 
+  private readonly ignoreErrorMap = new Map<LicensePlatePhotoTypeName,number>();
+
 
   constructor(
     private readonly configService: ConfigService,
@@ -42,6 +44,7 @@ export class PlateDetectionService {
         functionMap.set('processPossiblePlates', new Mutex());
 
         this.mutexMap.set(valueOf(processType), functionMap);
+        this.ignoreErrorMap.set(valueOf(processType), 0);
         this.videoDevicesMap.set(valueOf(processType),videoDevice);
       }
       else {
@@ -71,6 +74,13 @@ export class PlateDetectionService {
       }
     }
     return await funIsProcessRunning();
+  }
+
+  private modIgnoreError(process: LicensePlatePhotoTypeName, mod: number): number{
+    if(mod === 0) return this.ignoreErrorMap.get(process)!;
+    mod = this.ignoreErrorMap.get(process)!; + mod;
+    this.ignoreErrorMap.set(process, mod);
+    return mod;
   }
 
   public isDockerUsed(): boolean {
@@ -153,7 +163,7 @@ export class PlateDetectionService {
           this.loggerService.error(`Taking snaphot failed, processType: "${process}", licensePlate: "${licensePlate.licensePlate}", error: "${err}"`);
         }
         finally {
-          // Startet Kennzeichenerkennung erneut
+          // Starte Kennzeichenerkennung erneut
           if(!(await this.isProcessRunning(process)))
             this.startPlateRecognition(process);
           return;
@@ -176,15 +186,20 @@ export class PlateDetectionService {
     // Funktion zum starten des Prozesses.
     const funStartPlateRecognition = async (): Promise<void> => {
       // Beende sollte Kennzeichenerkennung bereits laufen
-      await this.stopPlateRecognition(process);
+      if(await this.isProcessRunning(process))
+          await this.stopPlateRecognition(process);
 
       // Starte Prozess
       const childProcess = exec(command,async error => {
         // Der Prozess wurde fehlerhaft beendet
-        /*
         if(error) {
-          this.loggerService.error(`Licenseplate recognition failed, type: "${process}", error: "${error}"`);
-        }*/
+          if(this.modIgnoreError(process,0) < 0){
+            this.loggerService.error(`Licenseplate recognition failed, type: "${process}", error: "${error}"`);
+            this.modIgnoreError(process,-this.modIgnoreError(process,0));
+          }
+          else
+            this.modIgnoreError(process,-1);
+        }
       });
 
       this.childProcessMap.set(process,childProcess);
@@ -200,20 +215,17 @@ export class PlateDetectionService {
   private async stopPlateRecognition(process: LicensePlatePhotoTypeName): Promise<void> {
     const funStopPlateRecognition = async () => {
       return new Promise<void>(async (resolve, reject) => {
-        if(await this.isProcessRunning(process)){
-          if(this.isDockerUsed()){
-            exec(`sudo docker container stop $(sudo docker container ls -q --filter name=${this.getDockerContrainerName(process)})`,() => {
-              exec(`sudo docker container rm $(sudo docker container ls -q --filter name=${this.getDockerContrainerName(process)})`, () => {
-                resolve();
-              })
-            });
-          }
-          else {
-            this.childProcessMap.get(process)!.kill();
-            resolve();
-          }
+        if(this.isDockerUsed()){
+          this.modIgnoreError(process,1);
+          exec(`sudo docker container stop $(sudo docker container ls -q --filter name=${this.getDockerContrainerName(process)})`,() => {
+            exec(`sudo docker container rm $(sudo docker container ls -q --filter name=${this.getDockerContrainerName(process)})`, () => {
+              resolve();
+            })
+          });
         }
         else {
+          this.modIgnoreError(process,1);
+          this.childProcessMap.get(process)!.kill();
           resolve();
         }
       });
