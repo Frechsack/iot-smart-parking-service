@@ -203,6 +203,8 @@ export class PlateDetectionService {
         }
       });
 
+      console.log('Process startet: ' + command);
+
       this.childProcessMap.set(process,childProcess);
 
       childProcess.stdout!.on('data', async data => {
