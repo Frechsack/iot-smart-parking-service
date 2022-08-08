@@ -85,11 +85,15 @@ export class PlateDetectionService {
   }
 
   public isDockerUsed(): boolean {
-    return this.configService.get<boolean>('LICENSE_PLATE_RECOGNITION_DOCKER', false);
+    const value = this.configService.get('LICENSE_PLATE_RECOGNITION_DOCKER', false);
+    if(typeof value === 'boolean') return value;
+    return value == 'true';
   }
 
   private getConfidenceMin(): number {
-    return this.configService.get<number>('LICENSE_PLATE_RECOGNITION_CONFIDENCE_MIN', 50);
+    const value = this.configService.get('LICENSE_PLATE_RECOGNITION_CONFIDENCE_MIN', 50);
+    if(typeof value === 'number') return value;
+    return Number(value);
   }
 
   private getSnapshotDirectory(): string {
