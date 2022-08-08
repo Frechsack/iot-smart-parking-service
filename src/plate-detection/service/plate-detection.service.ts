@@ -7,7 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import { LoggerService } from 'src/core/service/logger.service';
 import { LicensePlateRepository } from 'src/orm/repository/license-plate.repository';
 import { LicensePlateStatusRepository } from 'src/orm/repository/license-plate-status.repository';
-import { access } from 'fs/promises';
+const fs = require('fs').promises
 import { Mutex } from 'async-mutex';
 
 @Injectable()
@@ -243,7 +243,7 @@ export class PlateDetectionService {
 
       const existsFile = async (path: string): Promise<boolean> => {
         try {
-          await access(path);
+          await fs.access(path);
           return true;
         } catch {
           return false;
