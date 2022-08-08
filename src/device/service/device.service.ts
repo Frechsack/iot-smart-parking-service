@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { CommunicationService } from 'src/core/service/communication.service';
 import { LoggerService } from 'src/core/service/logger.service';
 import { Device } from 'src/orm/entity/device';
@@ -12,6 +12,7 @@ import { DeviceTypeRepository } from 'src/orm/repository/device-type.repository'
 import { DeviceRepository } from 'src/orm/repository/device.repository';
 import { ParkingLotRepository } from 'src/orm/repository/parking-lot.repository';
 import { EntityManager } from 'typeorm';
+import { DeviceDto } from '../dto/device-dto';
 
 /**
 * Stellt Standartfunktionen für die Anlage und modifizierung von Geräten, deren Anweisungen und Status bereit.
@@ -39,6 +40,44 @@ export class DeviceService {
 
     // Füge standart-entitäten ein.
     this.deviceTypeRepository.insertDefaults();
+  }
+
+  /**
+  * Gibt ein einzelnes Gerät aus. Existert das Gerät nicht, wird eine {@link HttpException} geworfen.
+  * @param mac Die Mac des zu suchenden Geräts.
+  * @returns Gibt das gefundene Gerät zurück. Existert das Gerät nicht, wird eine Exception auf dem error-channel geworfen.
+  */
+  public async getDevice(mac: string): Promise<DeviceDto> {
+    const device = await this.deviceRepository.findOne({
+      where: { mac: mac },
+      select: { mac: true, parent: { mac: true }, parkingLot: { nr: true}, type: { name: true } }
+    });
+
+    if(device == null)
+      throw new HttpException('Device not found',404);
+    return new DeviceDto(device.mac,(await device.type).name, (await device.parkingLot)?.nr, (await device.parent)?.mac);
+  }
+
+  /**
+  * Gibt alle Geräte zurück.
+  * @param page Die abzurufende Seite der imaginären Pagination.
+  * @param pageSize Die Anzahl an Elementen pro Seite.
+  * @returns Die Menge an Geräten.
+  */
+  public async getDevices(page: number = 0, pageSize: number = 20): Promise<DeviceDto[]>{
+    const devices = await this.deviceRepository.find({
+      skip: page * pageSize,
+      take: pageSize,
+      order: { mac: 'ASC'},
+      select: { mac: true, parent: { mac: true }, parkingLot: { nr: true}, type: { name: true } }
+    });
+
+    const devicePromises = devices.map(it => {
+      return new Promise<DeviceDto>(async resolve => {
+        resolve(new DeviceDto(it.mac, (await it.type).name, (await it.parkingLot)?.nr, (await it.parent)?.mac ));
+      });
+    });
+    return Promise.all(devicePromises);
   }
 
   /**
