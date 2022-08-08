@@ -39,7 +39,7 @@ export class DeviceController {
   Definition: @Get('/devices/notes/:id')
   Anfrage A: 'devices/notes/1' --> @Param('id') = 1
   Anfrage B: 'devices/notes/2?add=0' --> @Param('id') = 2, @Query('add') = 0
-  Anfrage C: 'devices/notes/Hello?remove=1' --> @Param('id') = 'Hello', @Query('remove') = 1 
+  Anfrage C: 'devices/notes/Hello?remove=1' --> @Param('id') = 'Hello', @Query('remove') = 1
 
   */
 
@@ -63,4 +63,10 @@ export class DeviceController {
   public async getOne(@Param('mac') mac: string): Promise<DeviceDto> {
     return this.deviceService.getDevice(mac);
   }
+
+  // TODO: getStatus
+
+  // TODO: getInstructions
+
+  // Die Eigenschaften der Methoden (Route-Parameter und Query-Parameter) können aus Postman entnommen werden.
 }
