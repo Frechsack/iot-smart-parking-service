@@ -7,7 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import { LoggerService } from 'src/core/service/logger.service';
 import { LicensePlateRepository } from 'src/orm/repository/license-plate.repository';
 import { LicensePlateStatusRepository } from 'src/orm/repository/license-plate-status.repository';
-import { access } from 'node:fs/promises';
+import { access } from 'fs/promises';
 import { Mutex } from 'async-mutex';
 
 @Injectable()
