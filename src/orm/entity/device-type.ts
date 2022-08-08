@@ -15,7 +15,7 @@ export function valueOf(name: string): DeviceTypeName{
 @Entity({ name: 'device_type' })
 export class DeviceType {
 
-  @Column({ type: 'varchar', primary: true, update: false, enum: DeviceTypeName })
+  @Column({ type: 'varchar', primary: true, update: false })
   public name: DeviceTypeName;
 
   @OneToMany(() => Device, it => it.type )

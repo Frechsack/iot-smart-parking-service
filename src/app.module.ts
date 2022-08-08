@@ -19,6 +19,8 @@ import { DeviceType } from './orm/entity/device-type';
 import { Device } from './orm/entity/device';
 import { DeviceStatus } from './orm/entity/device-status';
 import { DeviceInstruction } from './orm/entity/device-instruction';
+import { PlateDetectionModule } from './plate-detection/plate-detection.module';
+import { LicensePlateStatus } from './orm/entity/license-plate-status';
 
 @Module({
   imports: [
@@ -43,7 +45,8 @@ import { DeviceInstruction } from './orm/entity/device-instruction';
           Device,
           DeviceType,
           DeviceStatus,
-          DeviceInstruction
+          DeviceInstruction,
+          LicensePlateStatus
        ],
       synchronize: true
     }),
@@ -51,6 +54,7 @@ import { DeviceInstruction } from './orm/entity/device-instruction';
     AccountModule,
     CoreModule,
     OrmModule,
+    PlateDetectionModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, Repository } from 'typeorm';
+import { EntityManager, Repository, In } from 'typeorm';
 import { LicensePlate } from '../entity/license-plate';
 import { AbstractRepository } from './abstract.repository';
 
@@ -21,5 +21,10 @@ export class LicensePlateRepository extends AbstractRepository<LicensePlate> {
   */
   public forTransaction(manager: EntityManager): LicensePlateRepository {
     return new LicensePlateRepository(manager.getRepository(LicensePlate));
+  }
+
+  public async existsByPlate(plate: string | string[]): Promise<boolean> {
+    let plates: string[] = Array.isArray(plate) ? plate : [plate];
+    return (await this.findBy({ plate: In (plates) })).length > 0;
   }
 }
