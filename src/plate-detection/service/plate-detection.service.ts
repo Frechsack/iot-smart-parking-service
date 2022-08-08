@@ -106,8 +106,6 @@ export class PlateDetectionService {
 
   private extractPossiblePlates(data: string): {licensePlate: string, confidence: number}[]{
     const CONFIDENCE_MIN = this.getConfidenceMin();
-    console.log(CONFIDENCE_MIN);
-    console.log(data);
     // Format data:
     /**
     * plateX: N results
@@ -207,8 +205,6 @@ export class PlateDetectionService {
             this.modIgnoreError(process,-1);
         }
       });
-
-      console.log('Process startet: ' + command);
 
       this.childProcessMap.set(process,childProcess);
 
