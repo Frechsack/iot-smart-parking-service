@@ -81,6 +81,50 @@ export class DeviceService {
   }
 
   /**
+   * Gibt einen Status von einem Gerät aus
+   * @param status Der Status des zu suchenden Geräts.
+   * @returns Gibt den gefundenen Status zurück. 
+   */
+
+  public async getStatus(page: number = 0, pageSize: number = 20): Promise<DeviceDto>{
+    const status = await this.deviceStatusRepository.find({
+      skip: page * pageSize,
+      take: pageSize,
+      order: {mac: 'ASC'},
+      select: {mac: true, parent: { mac: true}, status: true, date: true, device: true}
+    });
+
+    const devicePromises = status.map(st => {
+      return new Promise<DeviceDto>(async resolve => {
+        resolve(new DeviceDto(st.status, st.date, st.device));
+      });
+    });
+    return Promise.all(devicePromises);
+  }
+
+   /**
+   * Gibt einen Instructions von einem Gerät aus
+   * @param instruction Die Anweisungen des zu suchenden Geräts.
+   * @returns Gibt die gefundene Anweisung zurück. 
+   */
+
+   public async getInstructions(page: number = 0, pageSize: number = 20): Promise<DeviceDto>{
+    const instructions = await this.deviceInstructionRepository.find({
+      skip: page * pageSize,
+      take: pageSize,
+      order: {mac: 'ASC'},
+      select: {mac: true, parent: { mac:true}, deviceMac: true, instruction: true, date: true}
+    });
+
+    const devicePromises = instructions.map(is => {
+      return new Promise<DeviceDto>(async resolve => {
+        resolve(new DeviceDto(is.instruction, is.device, is.date));
+      });
+    });
+    return Promise.all(devicePromises);
+   }
+
+  /**
   * Sichert eine Geräteanweisung in der Datenbank.
   * @param mac Die mac des Geräts, deren Anweisung gespeichert werden soll.
   * @param instruction Die zu speichernde Anweisung.

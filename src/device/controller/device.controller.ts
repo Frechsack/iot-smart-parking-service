@@ -65,8 +65,18 @@ export class DeviceController {
   }
 
   // TODO: getStatus
+  // @Query('page') page: number = 0,@Query('pageSize') pageSize: number = 20) Fehlt?
+  @Get(':status')
+  public async getStatus(@Param('status') status: string): Promise<DeviceDto> {
+    return this.deviceService.getDevice(status);
+  }
 
   // TODO: getInstructions
+  //@Query('page') page: number = 0,@Query('pageSize') pageSize: number = 20) Fehlt?
+  @Get(':instructions')
+  public async getInstructions(@Param('instructions') instructions: string): Promise<DeviceDto> {
+    return this.deviceService.getDevice(instructions);
+  }
 
   // Die Eigenschaften der Methoden (Route-Parameter und Query-Parameter) können aus Postman entnommen werden.
 }
