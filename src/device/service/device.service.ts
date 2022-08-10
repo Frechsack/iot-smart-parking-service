@@ -13,6 +13,7 @@ import { DeviceRepository } from 'src/orm/repository/device.repository';
 import { ParkingLotRepository } from 'src/orm/repository/parking-lot.repository';
 import { EntityManager } from 'typeorm';
 import { DeviceDto } from '../dto/device-dto';
+import { DeviceStatusDto } from '../dto/device-status-dto';
 
 /**
 * Stellt Standartfunktionen für die Anlage und modifizierung von Geräten, deren Anweisungen und Status bereit.
@@ -82,30 +83,31 @@ export class DeviceService {
 
   /**
    * Gibt einen Status von einem Gerät aus
-   * @param status Der Status des zu suchenden Geräts.
-   * @returns Gibt den gefundenen Status zurück. 
+   * @param mac Die Mac des Geräts, dessen Status gelesen werden soll.
+   * @param page Die abzurufende Seite.
+   * @param pageSize Die Anzahl an Elementen pro Seite.
+   * @returns Gibt den gefundenen Status zurück.
    */
 
-  public async getStatus(page: number = 0, pageSize: number = 20): Promise<DeviceDto>{
+  public async getStatus(mac: string, page: number = 0, pageSize: number = 20): Promise<DeviceStatusDto[]>{
     const status = await this.deviceStatusRepository.find({
       skip: page * pageSize,
       take: pageSize,
-      order: {mac: 'ASC'},
-      select: {mac: true, parent: { mac: true}, status: true, date: true, device: true}
+      where: { device: { mac: mac }}
     });
 
-    const devicePromises = status.map(st => {
-      return new Promise<DeviceDto>(async resolve => {
-        resolve(new DeviceDto(st.status, st.date, st.device));
+    const statusPromises = status.map(it => {
+      return new Promise<DeviceStatusDto>(async resolve => {
+        resolve(new DeviceStatusDto((await it.device).mac,it.status,it.date));
       });
     });
-    return Promise.all(devicePromises);
+    return Promise.all(statusPromises);
   }
 
    /**
    * Gibt einen Instructions von einem Gerät aus
    * @param instruction Die Anweisungen des zu suchenden Geräts.
-   * @returns Gibt die gefundene Anweisung zurück. 
+   * @returns Gibt die gefundene Anweisung zurück.
    */
 
    public async getInstructions(page: number = 0, pageSize: number = 20): Promise<DeviceDto>{

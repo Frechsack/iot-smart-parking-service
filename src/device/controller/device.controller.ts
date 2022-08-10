@@ -1,5 +1,6 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { DeviceDto } from '../dto/device-dto';
+import { DeviceStatusDto } from '../dto/device-status-dto';
 import { DeviceService } from '../service/device.service';
 
 /**
@@ -64,11 +65,10 @@ export class DeviceController {
     return this.deviceService.getDevice(mac);
   }
 
-  // TODO: getStatus
-  // @Query('page') page: number = 0,@Query('pageSize') pageSize: number = 20) Fehlt?
-  @Get(':status')
-  public async getStatus(@Param('status') status: string): Promise<DeviceDto> {
-    return this.deviceService.getDevice(status);
+
+  @Get(':mac')
+  public async getStatus(@Param('mac') mac: string, @Query('page') page: number = 0,@Query('pageSize') pageSize: number = 20 ): Promise<DeviceStatusDto[]> {
+    return this.deviceService.getStatus(mac, page, pageSize);
   }
 
   // TODO: getInstructions
