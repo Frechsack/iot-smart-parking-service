@@ -1,5 +1,7 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
+import { DeviceInstruction } from 'src/orm/entity/device-instruction';
 import { DeviceDto } from '../dto/device-dto';
+import { DeviceInstructionDto } from '../dto/device-instruction-dto';
 import { DeviceStatusDto } from '../dto/device-status-dto';
 import { DeviceService } from '../service/device.service';
 
@@ -73,9 +75,9 @@ export class DeviceController {
 
   // TODO: getInstructions
   //@Query('page') page: number = 0,@Query('pageSize') pageSize: number = 20) Fehlt?
-  @Get(':instructions')
-  public async getInstructions(@Param('instructions') instructions: string): Promise<DeviceDto> {
-    return this.deviceService.getDevice(instructions);
+  @Get(':mac')
+  public async getInstructions(@Param('mac') mac: string, @Query('page') page: number = 0,@Query('pageSize') pageSize: number = 20 ): Promise<DeviceInstructionDto[]> {
+    return this.deviceService.getInstructions(mac, page, pageSize);
   }
 
   // Die Eigenschaften der Methoden (Route-Parameter und Query-Parameter) können aus Postman entnommen werden.

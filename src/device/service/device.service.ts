@@ -14,6 +14,7 @@ import { ParkingLotRepository } from 'src/orm/repository/parking-lot.repository'
 import { EntityManager } from 'typeorm';
 import { DeviceDto } from '../dto/device-dto';
 import { DeviceStatusDto } from '../dto/device-status-dto';
+import { DeviceInstructionDto } from '../dto/device-instruction-dto';
 
 /**
 * Stellt Standartfunktionen für die Anlage und modifizierung von Geräten, deren Anweisungen und Status bereit.
@@ -110,20 +111,19 @@ export class DeviceService {
    * @returns Gibt die gefundene Anweisung zurück.
    */
 
-   public async getInstructions(page: number = 0, pageSize: number = 20): Promise<DeviceDto>{
+   public async getInstructions(mac: string, page: number = 0, pageSize: number = 20): Promise<DeviceInstructionDto[]>{
     const instructions = await this.deviceInstructionRepository.find({
       skip: page * pageSize,
       take: pageSize,
-      order: {mac: 'ASC'},
-      select: {mac: true, parent: { mac:true}, deviceMac: true, instruction: true, date: true}
+      where: { device: { mac: mac}}
     });
 
-    const devicePromises = instructions.map(is => {
-      return new Promise<DeviceDto>(async resolve => {
-        resolve(new DeviceDto(is.instruction, is.device, is.date));
+    const instructionPromises = instructions.map(is => {
+      return new Promise<DeviceInstructionDto>(async resolve => {
+        resolve(new DeviceInstructionDto((await is.device).mac, is.instruction, is.date));
       });
     });
-    return Promise.all(devicePromises);
+    return Promise.all(instructionPromises);
    }
 
   /**
