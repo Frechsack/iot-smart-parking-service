@@ -83,18 +83,19 @@ export class DeviceService {
   }
 
   /**
-   * Gibt einen Status von einem Gerät aus
+   * Gibt die Status von einem Gerät aus.
    * @param mac Die Mac des Geräts, dessen Status gelesen werden soll.
    * @param page Die abzurufende Seite.
    * @param pageSize Die Anzahl an Elementen pro Seite.
-   * @returns Gibt den gefundenen Status zurück.
+   * @returns Gibt die gefundenen Status zurück.
    */
 
   public async getStatus(mac: string, page: number = 0, pageSize: number = 20): Promise<DeviceStatusDto[]>{
     const status = await this.deviceStatusRepository.find({
       skip: page * pageSize,
       take: pageSize,
-      where: { device: { mac: mac }}
+      where: { device: { mac: mac }},
+      order: { date: 'DESC'}
     });
 
     const statusPromises = status.map(it => {
@@ -106,16 +107,18 @@ export class DeviceService {
   }
 
    /**
-   * Gibt einen Instructions von einem Gerät aus
-   * @param instruction Die Anweisungen des zu suchenden Geräts.
-   * @returns Gibt die gefundene Anweisung zurück.
+   * Gibt die Anweisungen von einem Gerät aus.
+   * @param mac Die Mac des Geräts, dessen Anweisungen gelesen werden soll.
+   * @param page Die abzurufende Seite.
+   * @param pageSize Die Anzahl an Elementen pro Seite.
+   * @returns Gibt die gefundenen Anweisungen zurück.
    */
-
    public async getInstructions(mac: string, page: number = 0, pageSize: number = 20): Promise<DeviceInstructionDto[]>{
     const instructions = await this.deviceInstructionRepository.find({
       skip: page * pageSize,
       take: pageSize,
-      where: { device: { mac: mac}}
+      where: { device: { mac: mac }},
+      order: { date: 'DESC'}
     });
 
     const instructionPromises = instructions.map(is => {

@@ -6,10 +6,10 @@ import { LicensePlatePhotoTypeName } from "./license-plate-photo-type";
   expression:
     `SELECT lp.license_plate as 'license_plate', lpp.\`date\` as \`date\`, lp.account_email as 'account_email', lpp.license_plate_photo_type as 'status'
      FROM (
-     SELECT lp.plate as 'license_plate', MAX(lpp.\`date\`) as \`date\`, lp.account_email as 'account_email'
-     FROM license_plate lp
-     LEFT JOIN license_plate_photo lpp on lpp.license_plate = lp.plate
-     group by lp.plate
+       SELECT lp.plate as 'license_plate', MAX(lpp.\`date\`) as \`date\`, lp.account_email as 'account_email'
+       FROM license_plate lp
+       LEFT JOIN license_plate_photo lpp on lpp.license_plate = lp.plate
+       group by lp.plate
      ) lp
      left JOIN license_plate_photo lpp on lpp.\`date\` = lp.\`date\` and lpp.license_plate = lp.license_plate`
   })

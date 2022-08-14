@@ -21,6 +21,8 @@ import { DeviceStatus } from './orm/entity/device-status';
 import { DeviceInstruction } from './orm/entity/device-instruction';
 import { PlateDetectionModule } from './plate-detection/plate-detection.module';
 import { LicensePlateStatus } from './orm/entity/license-plate-status';
+import { ParkingLotStatus } from './orm/entity/parking-lot-status';
+import { ParkingLotModule } from './parking-lot/parking-lot.module';
 
 @Module({
   imports: [
@@ -46,7 +48,8 @@ import { LicensePlateStatus } from './orm/entity/license-plate-status';
           DeviceType,
           DeviceStatus,
           DeviceInstruction,
-          LicensePlateStatus
+          LicensePlateStatus,
+          ParkingLotStatus
        ],
       synchronize: true
     }),
@@ -55,6 +58,7 @@ import { LicensePlateStatus } from './orm/entity/license-plate-status';
     CoreModule,
     OrmModule,
     PlateDetectionModule,
+    ParkingLotModule,
   ],
   controllers: [AppController],
   providers: [AppService],

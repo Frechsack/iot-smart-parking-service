@@ -5,7 +5,8 @@ export enum DeviceTypeName {
   LAMP='LAMP',
   PARKING_GUIDE_LAMP='PARKING_GUIDE_LAMP',
   CWO_SENSOR='CWO_SENSOR',
-  SERVO='SERVO'
+  SERVO='SERVO',
+  MOTION_SENSOR='MOTION_SENSOR'
 }
 
 export function valueOf(name: string): DeviceTypeName{

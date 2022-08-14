@@ -68,14 +68,12 @@ export class DeviceController {
   }
 
 
-  @Get(':mac')
+  @Get(':mac/status')
   public async getStatus(@Param('mac') mac: string, @Query('page') page: number = 0,@Query('pageSize') pageSize: number = 20 ): Promise<DeviceStatusDto[]> {
     return this.deviceService.getStatus(mac, page, pageSize);
   }
 
-  // TODO: getInstructions
-  //@Query('page') page: number = 0,@Query('pageSize') pageSize: number = 20) Fehlt?
-  @Get(':mac')
+  @Get(':mac/instructions')
   public async getInstructions(@Param('mac') mac: string, @Query('page') page: number = 0,@Query('pageSize') pageSize: number = 20 ): Promise<DeviceInstructionDto[]> {
     return this.deviceService.getInstructions(mac, page, pageSize);
   }
