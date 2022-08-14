@@ -142,7 +142,7 @@ export class DeviceService {
         this.thrownUnknowDeviceException(mac);
       // Füge Anweisung hinzu
       let deviceInstruction = new DeviceInstruction();
-      deviceInstruction.date = new Date();
+      deviceInstruction.date = new Date(Date.now());
       deviceInstruction.instruction = instruction;
       deviceInstruction.device = Promise.resolve((await this.deviceRepository.findOneByMac(mac))!);
       deviceInstruction = await this.deviceInstructionRepository.save(deviceInstruction);
@@ -168,7 +168,7 @@ export class DeviceService {
         this.thrownUnknowDeviceException(mac);
       // Füge Status hinzu
       let deviceStatus = new DeviceStatus();
-      deviceStatus.date = new Date();
+      deviceStatus.date = new Date(Date.now());
       deviceStatus.status = status;
       deviceStatus.device = Promise.resolve((await this.deviceRepository.findOneByMac(mac))!);
       deviceStatus = await this.deviceStatusRepository.save(deviceStatus);
