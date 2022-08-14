@@ -5,10 +5,10 @@ import { LicensePlatePhotoType } from './license-plate-photo-type';
 @Entity({ name: 'license_plate_photo' })
 export class LicensePlatePhoto {
 
-  @Column({ type: 'longblob', nullable: false})
+  @Column({ type: 'longblob', nullable: false })
   public image: Uint8Array;
 
-  @Column({ type: 'datetime', primary: true})
+  @Column({ type: 'datetime', primary: true })
   public date: Date;
 
   @ManyToOne(() => LicensePlate, it => it.photos, { nullable: false })

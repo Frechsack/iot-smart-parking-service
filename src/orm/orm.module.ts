@@ -4,6 +4,7 @@ import { Account } from './entity/account';
 import { AuthenticationToken } from './entity/authentication-token';
 import { BankConnection } from './entity/bank-connection';
 import { Device } from './entity/device';
+import { DeviceChildren } from './entity/device-children';
 import { DeviceInstruction } from './entity/device-instruction';
 import { DeviceStatus } from './entity/device-status';
 import { DeviceType } from './entity/device-type';
@@ -17,6 +18,7 @@ import { Payment } from './entity/payment';
 import { AccountRepository } from './repository/account.repository';
 import { AuthenticationTokenRepository } from './repository/authentication-token.repository';
 import { BankConnectionRepository } from './repository/bank-connection.repository';
+import { DeviceChildrenRepository } from './repository/device-children.repository';
 import { DeviceInstructionRepository } from './repository/device-instruction.repository';
 import { DeviceStatusRepository } from './repository/device-status.repository';
 import { DeviceTypeRepository } from './repository/device-type.repository';
@@ -44,6 +46,7 @@ import { PaymentRepository } from './repository/payment.repository';
             TypeOrmModule.forFeature([DeviceStatus]),
             TypeOrmModule.forFeature([DeviceInstruction]),
             TypeOrmModule.forFeature([ParkingLotStatus]),
+            TypeOrmModule.forFeature([DeviceChildren]),
           ],
   providers: [
     AccountRepository,
@@ -59,7 +62,8 @@ import { PaymentRepository } from './repository/payment.repository';
     DeviceStatusRepository,
     DeviceInstructionRepository,
     LicensePlateStatusRepository,
-    ParkingLotStatusRepository
+    ParkingLotStatusRepository,
+    DeviceChildrenRepository
   ],
   exports: [
     AccountRepository,
@@ -75,7 +79,8 @@ import { PaymentRepository } from './repository/payment.repository';
     DeviceStatusRepository,
     DeviceInstructionRepository,
     LicensePlateStatusRepository,
-    ParkingLotStatusRepository
+    ParkingLotStatusRepository,
+    DeviceChildrenRepository
   ],
 })
 export class OrmModule {}

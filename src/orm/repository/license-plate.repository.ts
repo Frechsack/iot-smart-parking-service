@@ -27,4 +27,8 @@ export class LicensePlateRepository extends AbstractRepository<LicensePlate> {
     let plates: string[] = Array.isArray(plate) ? plate : [plate];
     return (await this.findBy({ plate: In (plates) })).length > 0;
   }
+
+  public async findOneByPlate(plate: string): Promise<LicensePlate | null> {
+    return await this.findOneBy({ plate: plate });
+  }
 }
