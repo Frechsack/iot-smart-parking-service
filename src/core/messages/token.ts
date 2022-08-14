@@ -62,7 +62,6 @@ export class Token {
   * @returns Gibt die Tokens zurück.
   */
   public static parseTokens(message: string, length: number = 0): Token[] {
-    console.log('TOKEN: ' + message);
     const elements = message.split(':');
     const target: Token[] = [];
 

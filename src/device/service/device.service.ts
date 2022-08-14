@@ -34,11 +34,11 @@ export class DeviceService {
     this.loggerService.context = DeviceService.name;
     // Externe Informationen speichern
     this.communicationService.registerLane
-      .subscribe(it => this.registerDevice(it.mac,it.deviceType,it.parkingLotNr,it.parentDeviceMac));
+      .subscribe(it => this.registerDevice(it.mac,it.deviceType,it.parkingLotNr,it.parentDeviceMac).catch(() => {}));
     this.communicationService.statusLane
-      .subscribe(it => this.saveDeviceStatus(it.mac, it.status));
+      .subscribe(it => this.saveDeviceStatus(it.mac, it.status).catch(() => {}));
     this.communicationService.instructionLane
-      .subscribe(it => this.saveDeviceInstruction(it.mac, it.instruction));
+      .subscribe(it => this.saveDeviceInstruction(it.mac, it.instruction).catch(() => {}));
 
     // Füge standart-entitäten ein.
     this.deviceTypeRepository.insertDefaults();
@@ -176,7 +176,7 @@ export class DeviceService {
       return deviceStatus;
     }
     catch(e){
-      this.loggerService.log(`Update of device-status failed, error: "${e}"`);
+      this.loggerService.error(`Update of device-status failed, error: "${e}"`);
       throw e;
     }
   }
