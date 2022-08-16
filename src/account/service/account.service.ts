@@ -7,6 +7,7 @@ import { LicensePlateRepository } from 'src/orm/repository/license-plate.reposit
 import { PaymentRepository } from 'src/orm/repository/payment.repository';
 import { AccountDto } from '../dto/account-dto';
 import { PaymentDto } from '../dto/payment-dto';
+import { JwtService } from './jwt.service';
 
 @Injectable()
 export class AccountService {
@@ -15,10 +16,67 @@ export class AccountService {
     private readonly accountRepository: AccountRepository,
     private readonly licensePlateRepository: LicensePlateRepository,
     private readonly loggerService: LoggerService,
-    private readonly paymentRepository: PaymentRepository
+    private readonly paymentRepository: PaymentRepository,
+    private readonly jwtService: JwtService
+
   ) {
-    this.loggerService.context = AccountService.name;
-  }
+      this.loggerService.context = AccountService.name;
+    }
+
+    public async editAccount(email: string, firstname?: string, lastname?: string, zip?: string, street?: string, streetNr?: string, password?: string): Promise<void> {
+        let account = await this.accountRepository.findOneByEmail(email);
+        if (account == null)
+            throw new HttpException('No Account with matching email in use', 403);
+        if (firstname != undefined) {
+            account.firstname = firstname;
+        }
+
+        if (lastname != undefined) {
+            account.lastname = lastname;
+        }
+
+        if (zip != undefined) {
+            account.zip = zip;
+        }
+
+        if (street != undefined) {
+            account.street = street;
+        }
+
+        if (streetNr != undefined) {
+            account.streetNr = streetNr;
+        }
+
+        if (password != undefined) {
+            account.secret = password;
+        }
+
+        try {
+            await this.accountRepository.save(account);
+            this.loggerService.log(`Account modified, email: "${email}"`);
+        }
+        catch (error) {
+            this.loggerService.error(`Modification of account failed, email: "${email}"`);
+            throw error;
+        }
+    }
+
+    public async authenticate(email: string, password: string): Promise<string> {
+        let account = await this.accountRepository.findOneByEmail(email);
+        if (account == null) {
+            throw new HttpException ("There is no Account for corrensponding mail adress", 404)
+
+        }
+
+        if (account.secret == password) {
+            return (await this.jwtService.generate(email)).jwt;
+        
+        }
+
+        throw new HttpException("Try a better password next time looser", 42069);
+
+        
+    }
 
   public async insertAccount(email: string, firstname: string, lastname: string, zip: string, street: string, streetNr: string, password: string): Promise<void> {
     let account = await this.accountRepository.findOneByEmail(email);

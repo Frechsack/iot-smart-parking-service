@@ -18,20 +18,20 @@ export class AccountController {
     @Param('email') email: string,
     @Query('passowrd') password: string
   ): Promise<string> {
-
+      return this.accountService.authenticate(email, password);
   }
 
   @Put(':email/update')
   public async updateAccount(
     @Param('email') email: string,
-    @Query('password') password: string,
-    @Query('firstname') firstname: string,
-    @Query('lastname') lastname: string,
-    @Query('zip') zip: string,
-    @Query('street') street: string,
-    @Query('streetNr') streetNr: string,
+    @Query('password') password?: string,
+    @Query('firstname') firstname?: string,
+    @Query('lastname') lastname?: string,
+    @Query('zip') zip?: string,
+    @Query('street') street?: string,
+    @Query('streetNr') streetNr?: string,
   ): Promise<void> {
-    
+      this.accountService.editAccount(email, firstname, lastname, zip, street, streetNr, password);
   }
 
   @Post('register')
