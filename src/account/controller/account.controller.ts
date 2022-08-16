@@ -13,6 +13,14 @@ export class AccountController {
   ){
   }
 
+  @Post(':email/authenticate')
+  public async authenticate(
+    @Param('email') email: string,
+    @Query('passowrd') password: string
+  ): Promise<string> {
+    
+  }
+
   @Post('register')
   public async register(
       @Query('email') email: string,
