@@ -5,7 +5,7 @@ import { Account } from './account';
 export class BankConnection {
 
   @Column({type: "varchar", primary: true })
-  public iban: String;
+  public iban: string;
 
   @OneToMany(()=>Account, it => it.bankConnection)
   public accounts: Promise <Account[]>;

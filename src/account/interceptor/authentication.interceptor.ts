@@ -1,8 +1,8 @@
 import { CallHandler, ExecutionContext, HttpException, HttpStatus, Injectable, NestInterceptor } from "@nestjs/common";
-import { Observable, of, throwError, mergeMap } from "rxjs";
+import { Observable, throwError } from "rxjs";
 import { JwtService } from "../service/jwt.service";
 
-const AUTHENTICATION_HEADER_TOKEN = 'bearer';
+export const AUTHENTICATION_HEADER_TOKEN = 'bearer';
 
 @Injectable()
 export class AuthenticationInterceptor implements NestInterceptor {

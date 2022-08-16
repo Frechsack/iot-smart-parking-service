@@ -22,4 +22,8 @@ export class BankConnectionRepository extends AbstractRepository<BankConnection>
   public forTransaction(manager: EntityManager): BankConnectionRepository {
     return new BankConnectionRepository(manager.getRepository(BankConnection));
   }
+
+  public async findOneByIban(iban: string): Promise<BankConnection | null>{
+    return this.findOneBy({ iban: iban });
+  }
 }

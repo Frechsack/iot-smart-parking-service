@@ -6,9 +6,11 @@ import { OrmModule } from 'src/orm/orm.module';
 import { AuthenticationInterceptor } from './interceptor/authentication.interceptor';
 import { AccountService } from './service/account.service';
 import { JwtService } from './service/jwt.service';
+import { AccountController } from './controller/account.controller';
 
 @Module({
   providers: [ AccountService, JwtService, AuthenticationInterceptor ],
-  imports:[ OrmModule, CoreModule ]
+  imports:[ OrmModule, CoreModule ],
+  controllers: [AccountController]
 })
 export class AccountModule {}
