@@ -16,7 +16,7 @@ export class AccountController {
   @Post(':email/authenticate')
   public async authenticate(
     @Param('email') email: string,
-    @Query('passowrd') password: string
+    @Query('password') password: string
   ): Promise<string> {
       return this.accountService.authenticate(email, password);
   }
@@ -62,7 +62,7 @@ export class AccountController {
     ): Promise<void> {
         this.accountService.removeLicensePlate(email, plate);
     }
-    
+
 
 
   @UseInterceptors(AuthenticationInterceptor)
