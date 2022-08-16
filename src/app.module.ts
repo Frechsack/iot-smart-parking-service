@@ -54,7 +54,8 @@ import { WorkflowModule } from './workflow/workflow.module';
           ParkingLotStatus,
           DeviceChildren
        ],
-      synchronize: true
+      synchronize: true,
+      //logging: ["query", "error"]
     }),
     DeviceModule,
     AccountModule,

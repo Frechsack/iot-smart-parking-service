@@ -22,4 +22,8 @@ export class AccountRepository extends AbstractRepository<Account> {
   public forTransaction(manager: EntityManager): AccountRepository {
     return new AccountRepository(manager.getRepository(Account));
   }
+
+  public async findOneByEmail(email: string): Promise<Account | null> {
+    return this.findOneBy({ email: email });
+  }
 }

@@ -4,11 +4,11 @@ import { BankConnection } from './bank-connection';
 import { LicensePlate } from './license-plate';
 import { Payment } from './payment';
 
-@Entity({ name: 'account'})
+@Entity({ name: 'account' })
 export class Account {
 
-  @Column({type: "varchar", primary: true })
-  public email: String;
+  @Column({type: "varchar", primary: true, length: 50 })
+  public email: string;
 
   @Column({type: "varchar", nullable: false})
   public secret: string;

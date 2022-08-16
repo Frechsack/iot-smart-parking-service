@@ -16,4 +16,12 @@ export class AuthenticationToken {
     @ManyToOne(() => Account, it => it.jwts, { nullable: false, createForeignKeyConstraints: false })
     @JoinColumn({ name: 'account_email'})
     public owner: Promise<Account>;
+
+    public get isValid(): boolean{
+      return this.created.getTime() <= Date.now() && Date.now() <= this.expires.getTime();
+    }
+
+    public get isExpired(): boolean {
+      return !this.isValid;
+    }
 }

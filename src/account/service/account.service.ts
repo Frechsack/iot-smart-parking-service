@@ -6,8 +6,5 @@ export class AccountService {
 
 
   constructor(private readonly accountRepository: AccountRepository) {
-
-    accountRepository.clear();
   }
-
 }

@@ -27,6 +27,7 @@
     "@nestjs/platform-express": "^8.0.0",
     "@nestjs/typeorm": "^9.0.0",
     "async-mutex": "^0.3.2",
+    "jsonwebtoken": "^8.5.1",
     "mariadb": "^3.0.1",
     "mqtt": "^4.3.7",
     "mysql2": "^2.3.3",

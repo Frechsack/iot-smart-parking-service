@@ -22,4 +22,8 @@ export class AuthenticationTokenRepository extends AbstractRepository<Authentica
   public forTransaction(manager: EntityManager): AuthenticationTokenRepository {
     return new AuthenticationTokenRepository(manager.getRepository(AuthenticationToken));
   }
+
+  public async findOneByJwt(jwt: string): Promise<AuthenticationToken | null> {
+    return this.findOneBy({ jwt: jwt });
+  }
 }
