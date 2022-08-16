@@ -26,7 +26,7 @@ export class AccountService {
     public async editAccount(email: string, firstname?: string, lastname?: string, zip?: string, street?: string, streetNr?: string, password?: string): Promise<void> {
         let account = await this.accountRepository.findOneByEmail(email);
         if (account == null)
-            throw new HttpException('No Account with matching email in use', 403);
+            return Promise.reject(new HttpException('No Account with matching email in use', 403));
         if (firstname != undefined) {
             account.firstname = firstname;
         }
@@ -57,31 +57,28 @@ export class AccountService {
         }
         catch (error) {
             this.loggerService.error(`Modification of account failed, email: "${email}"`);
-            throw error;
+            return Promise.reject(error);
         }
     }
 
     public async authenticate(email: string, password: string): Promise<string> {
         let account = await this.accountRepository.findOneByEmail(email);
         if (account == null) {
-            throw new HttpException ("There is no Account for corrensponding mail adress", 404)
-
+            return Promise.reject(new HttpException ("There is no Account for corrensponding mail adress", 404));
         }
 
         if (account.secret == password) {
             return (await this.jwtService.generate(email)).jwt;
-        
+
         }
 
-        throw new HttpException("Try a better password next time looser", 42069);
-
-        
+        return Promise.reject(new HttpException("Try a better password next time looser", 42069));
     }
 
   public async insertAccount(email: string, firstname: string, lastname: string, zip: string, street: string, streetNr: string, password: string): Promise<void> {
     let account = await this.accountRepository.findOneByEmail(email);
     if(account != null)
-      throw new HttpException('Account already in use', 403);
+      return Promise.reject(new HttpException('Account already in use', 403));
     account = new Account();
     account.email = email;
     account.firstname = firstname;
@@ -96,7 +93,7 @@ export class AccountService {
     }
     catch(error) {
       this.loggerService.error(`Creation of account failed, email: "${email}"`);
-      throw error;
+      return Promise.reject(error);
     }
   }
 
@@ -113,7 +110,7 @@ export class AccountService {
   public async removeLicensePlate(email: string, plate: string): Promise<void> {
     const account = await this.accountRepository.findOneByEmail(email);
     if(account == null)
-      throw new HttpException('Account not found',404);
+      return Promise.reject(new HttpException('Account not found',404));
 
     let licensePlate = await this.licensePlateRepository.findOneByPlate(plate);
     if(licensePlate == null)
@@ -130,14 +127,14 @@ export class AccountService {
       }
     }
     else{
-      throw new HttpException('License-plate registered for different used', 401);
+      return Promise.reject(new HttpException('License-plate registered for different used', 401));
     }
   }
 
   public async addLicensePlate(email: string, plate: string): Promise<void> {
     const account = await this.accountRepository.findOneByEmail(email);
     if(account == null)
-      throw new HttpException('Account not found',404);
+      return Promise.reject(new HttpException('Account not found',404));
 
     let licensePlate = await this.licensePlateRepository.findOneByPlate(plate);
     if(licensePlate != null){
@@ -156,13 +153,14 @@ export class AccountService {
     }
     catch( error) {
       this.loggerService.error(`Failed register of license-plate, email: "${email}", plate: "${plate}", error: "${error}"`);
+      return Promise.reject(error);
     }
   }
 
   public async getAccount(email: string): Promise<AccountDto>{
     const account = await this.accountRepository.findOneByEmail(email);
     if(account == null)
-      throw new HttpException('Account not found',404);
+      return Promise.reject(new HttpException('Account not found',404));
 
     return new AccountDto(
       account.email,
