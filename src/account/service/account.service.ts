@@ -119,7 +119,7 @@ export class AccountService {
     if((await licensePlate.account).email == email)
     {
       try {
-        await this.licensePlateRepository.softRemove(licensePlate);
+        await this.licensePlateRepository.remove(licensePlate);
         this.loggerService.log(`Removed license-plate, email: "${email}", plate: "${plate}"`);
       }
       catch( error) {
