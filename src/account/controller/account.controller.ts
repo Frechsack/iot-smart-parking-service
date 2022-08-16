@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, UseInterceptors, Headers, HttpException, Post, Put } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseInterceptors, Headers, HttpException, Post, Put, Delete } from '@nestjs/common';
 import { PaymentDto } from '../dto/payment-dto';
 import { AuthenticationInterceptor, AUTHENTICATION_HEADER_TOKEN } from '../interceptor/authentication.interceptor';
 import { AccountService } from '../service/account.service';
@@ -45,7 +45,24 @@ export class AccountController {
       @Query('streetNr') streetNr: string,
   ): Promise<void> {
     this.accountService.insertAccount(email,firstname,lastname,zip,street,streetNr,password);
-  }
+    }
+
+    @Post(':email/plates')
+    public async addPlate(
+        @Param('email') email: string,
+        @Query('plate') plate: string,
+    ): Promise<void> {
+        this.accountService.addLicensePlate(email, plate);
+    }
+
+    @Delete(':email/plates')
+    public async deletePlate(
+        @Param('email') email: string,
+        @Query('plate') plate: string,
+    ): Promise<void> {
+        this.accountService.removeLicensePlate(email, plate);
+    }
+    
 
 
   @UseInterceptors(AuthenticationInterceptor)
