@@ -1,6 +1,5 @@
 import { Entity, Column, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
 import { AuthenticationToken } from './authentication-token';
-import { BankConnection } from './bank-connection';
 import { LicensePlate } from './license-plate';
 import { Payment } from './payment';
 
@@ -10,12 +9,23 @@ export class Account {
   @Column({type: "varchar", primary: true, length: 50 })
   public email: string;
 
+  @Column({type: "varchar" })
+  public firstname: string;
+
+  @Column({type: "varchar" })
+  public lastname: string;
+
+  @Column({type: "varchar" })
+  public zip: string;
+
+  @Column({type: "varchar" })
+  public street: string;
+
+  @Column({type: "varchar" })
+  public streetNr: string;
+
   @Column({type: "varchar", nullable: false})
   public secret: string;
-
-  @ManyToOne(() => BankConnection, (it) => it.accounts, { nullable: true })
-  @JoinColumn({name: 'bank_connection_iban'})
-  public bankConnection: Promise<BankConnection | null>
 
   @OneToMany(() => AuthenticationToken, it => it.owner)
   public jwts: Promise<AuthenticationToken[]>;

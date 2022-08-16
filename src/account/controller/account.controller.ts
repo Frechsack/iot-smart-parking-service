@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, UseInterceptors, Headers, HttpException } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseInterceptors, Headers, HttpException, Post } from '@nestjs/common';
 import { PaymentDto } from '../dto/payment-dto';
 import { AuthenticationInterceptor, AUTHENTICATION_HEADER_TOKEN } from '../interceptor/authentication.interceptor';
 import { AccountService } from '../service/account.service';
@@ -13,6 +13,19 @@ export class AccountController {
   ){
   }
 
+  @Post('register')
+  public async register(
+      @Query('email') email: string,
+      @Query('password') password: string,
+      @Query('firstname') firstname: string,
+      @Query('lastname') lastname: string,
+      @Query('zip') zip: string,
+      @Query('street') street: string,
+      @Query('streetNr') streetNr: string,
+  ): Promise<void> {
+    this.accountService.insertAccount(email,firstname,lastname,zip,street,streetNr,password);
+  }
+
 
   @UseInterceptors(AuthenticationInterceptor)
   @Get(':email/plates/:plate/payments')
@@ -21,7 +34,8 @@ export class AccountController {
     @Param('email') email: string,
     @Param('plate') plate: string,
     @Query('page') page: number = 0,
-    @Query('pageSize') pageSize: number = 20): Promise<PaymentDto[]> {
+    @Query('pageSize') pageSize: number = 20
+  ): Promise<PaymentDto[]> {
     if(!(await this.jwtService.verify(authHeader)))
       return Promise.reject(new HttpException('Permission denied',403));
 

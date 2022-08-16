@@ -1,5 +1,6 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { LoggerService } from 'src/core/service/logger.service';
+import { Account } from 'src/orm/entity/account';
 import { LicensePlate } from 'src/orm/entity/license-plate';
 import { AccountRepository } from 'src/orm/repository/account.repository';
 import { LicensePlateRepository } from 'src/orm/repository/license-plate.repository';
@@ -17,6 +18,28 @@ export class AccountService {
     private readonly paymentRepository: PaymentRepository
   ) {
     this.loggerService.context = AccountService.name;
+  }
+
+  public async insertAccount(email: string, firstname: string, lastname: string, zip: string, street: string, streetNr: string, password: string): Promise<void> {
+    let account = await this.accountRepository.findOneByEmail(email);
+    if(account != null)
+      throw new HttpException('Account already in use', 403);
+    account = new Account();
+    account.email = email;
+    account.firstname = firstname;
+    account.lastname = lastname;
+    account.zip = zip;
+    account.street = street;
+    account.streetNr = streetNr;
+    account.secret = password;
+    try {
+      await this.accountRepository.save(account);
+      this.loggerService.log(`Created account, email: "${email}"`);
+    }
+    catch(error) {
+      this.loggerService.error(`Creation of account failed, email: "${email}"`);
+      throw error;
+    }
   }
 
   public async getPayments(email: string, plate: string, page: number = 0, pageSize: number = 20): Promise<PaymentDto[]> {

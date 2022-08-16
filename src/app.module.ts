@@ -8,7 +8,6 @@ import { CoreModule } from './core/core.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Account } from 'src/orm/entity/account';
 import { OrmModule } from './orm/orm.module';
-import { BankConnection } from './orm/entity/bank-connection';
 import { AuthenticationToken } from './orm/entity/authentication-token';
 import { LicensePlate } from './orm/entity/license-plate';
 import { LicensePlatePhoto } from './orm/entity/license-plate-photo';
@@ -39,7 +38,6 @@ import { WorkflowModule } from './workflow/workflow.module';
       password: 'etcuiaUanDEiuhjs61hjcvoijWQnjvcpq',
       database: 'iot-smart-parking',
       entities: [ Account,
-          BankConnection,
           AuthenticationToken,
           LicensePlate,
           LicensePlatePhoto,

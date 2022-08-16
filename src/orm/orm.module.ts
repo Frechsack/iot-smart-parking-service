@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Account } from './entity/account';
 import { AuthenticationToken } from './entity/authentication-token';
-import { BankConnection } from './entity/bank-connection';
 import { Device } from './entity/device';
 import { DeviceChildren } from './entity/device-children';
 import { DeviceInstruction } from './entity/device-instruction';
@@ -17,7 +16,6 @@ import { ParkingLotStatus } from './entity/parking-lot-status';
 import { Payment } from './entity/payment';
 import { AccountRepository } from './repository/account.repository';
 import { AuthenticationTokenRepository } from './repository/authentication-token.repository';
-import { BankConnectionRepository } from './repository/bank-connection.repository';
 import { DeviceChildrenRepository } from './repository/device-children.repository';
 import { DeviceInstructionRepository } from './repository/device-instruction.repository';
 import { DeviceStatusRepository } from './repository/device-status.repository';
@@ -34,7 +32,6 @@ import { PaymentRepository } from './repository/payment.repository';
 @Module({
   imports: [TypeOrmModule.forFeature([Account]),
             TypeOrmModule.forFeature([AuthenticationToken]),
-            TypeOrmModule.forFeature([BankConnection]),
             TypeOrmModule.forFeature([LicensePlate]),
             TypeOrmModule.forFeature([LicensePlateStatus]),
             TypeOrmModule.forFeature([LicensePlatePhoto]),
@@ -51,7 +48,6 @@ import { PaymentRepository } from './repository/payment.repository';
   providers: [
     AccountRepository,
     AuthenticationTokenRepository,
-    BankConnectionRepository,
     LicensePlateRepository,
     LicensePlatePhotoRepository,
     LicensePlatePhotoTypeRepository,
@@ -68,7 +64,6 @@ import { PaymentRepository } from './repository/payment.repository';
   exports: [
     AccountRepository,
     AuthenticationTokenRepository,
-    BankConnectionRepository,
     LicensePlateRepository,
     LicensePlatePhotoRepository,
     LicensePlatePhotoTypeRepository,
