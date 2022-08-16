@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, UseInterceptors, Headers, HttpException, Post } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseInterceptors, Headers, HttpException, Post, Put } from '@nestjs/common';
 import { PaymentDto } from '../dto/payment-dto';
 import { AuthenticationInterceptor, AUTHENTICATION_HEADER_TOKEN } from '../interceptor/authentication.interceptor';
 import { AccountService } from '../service/account.service';
@@ -18,6 +18,19 @@ export class AccountController {
     @Param('email') email: string,
     @Query('passowrd') password: string
   ): Promise<string> {
+
+  }
+
+  @Put(':email/update')
+  public async updateAccount(
+    @Param('email') email: string,
+    @Query('password') password: string,
+    @Query('firstname') firstname: string,
+    @Query('lastname') lastname: string,
+    @Query('zip') zip: string,
+    @Query('street') street: string,
+    @Query('streetNr') streetNr: string,
+  ): Promise<void> {
     
   }
 
