@@ -1,4 +1,5 @@
 import { Controller, Get, Param, Query, UseInterceptors, Headers, HttpException, Post, Put, Delete } from '@nestjs/common';
+import { AccountDto } from '../dto/account-dto';
 import { PaymentDto } from '../dto/payment-dto';
 import { AuthenticationInterceptor, AUTHENTICATION_HEADER_TOKEN } from '../interceptor/authentication.interceptor';
 import { AccountService } from '../service/account.service';
@@ -22,7 +23,7 @@ export class AccountController {
   }
 
   @Put(':email')
-  public async updateAccount(
+  public async update(
     @Param('email') email: string,
     @Query('password') password?: string,
     @Query('firstname') firstname?: string,
@@ -63,6 +64,19 @@ export class AccountController {
         return this.accountService.removeLicensePlate(email, plate);
     }
 
+    @Get(':email')
+    public async get(
+        @Headers(AUTHENTICATION_HEADER_TOKEN) authHeader: string,
+        @Param('email') email: string
+    ): Promise<AccountDto>{
+      if(email === 'this') {
+        const account = await this.jwtService.authenticated(authHeader);
+        if(account == null)
+          return Promise.reject(new HttpException('Invalid authentication',401));
+        email = account?.email;
+      }
+      return this.accountService.getAccount(email);
+    }
 
 
   @UseInterceptors(AuthenticationInterceptor)

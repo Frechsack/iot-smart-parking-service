@@ -1,7 +1,7 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ParkingLotService } from '../service/parking-lot.service';
 
-@Controller('parking-lot')
+@Controller('parking-lots')
 export class ParkingLotController {
 
   constructor(

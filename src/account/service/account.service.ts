@@ -76,6 +76,9 @@ export class AccountService {
     }
 
   public async insertAccount(email: string, firstname: string, lastname: string, zip: string, street: string, streetNr: string, password: string): Promise<void> {
+    if(email === 'this')
+        return Promise.reject(new HttpException('Invalid email', 403));
+
     let account = await this.accountRepository.findOneByEmail(email);
     if(account != null)
       return Promise.reject(new HttpException('Account already in use', 403));

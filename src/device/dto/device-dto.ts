@@ -8,5 +8,4 @@ export class DeviceDto {
     public readonly parentMac?: string
   ){
   }
-
 }
