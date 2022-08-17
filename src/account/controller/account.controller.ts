@@ -55,10 +55,10 @@ export class AccountController {
         return this.accountService.addLicensePlate(email, plate);
     }
 
-    @Delete(':email/plates')
+    @Delete(':email/plates/:plate')
     public async deletePlate(
         @Param('email') email: string,
-        @Query('plate') plate: string,
+        @Param('plate') plate: string,
     ): Promise<void> {
         return this.accountService.removeLicensePlate(email, plate);
     }
