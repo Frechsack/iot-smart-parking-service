@@ -21,7 +21,7 @@ export class AccountController {
       return this.accountService.authenticate(email, password);
   }
 
-  @Put(':email/update')
+  @Put(':email')
   public async updateAccount(
     @Param('email') email: string,
     @Query('password') password?: string,
@@ -31,10 +31,10 @@ export class AccountController {
     @Query('street') street?: string,
     @Query('streetNr') streetNr?: string,
   ): Promise<void> {
-      this.accountService.editAccount(email, firstname, lastname, zip, street, streetNr, password);
+    return  this.accountService.editAccount(email, firstname, lastname, zip, street, streetNr, password);
   }
 
-  @Post('register')
+  @Post()
   public async register(
       @Query('email') email: string,
       @Query('password') password: string,
@@ -44,7 +44,7 @@ export class AccountController {
       @Query('street') street: string,
       @Query('streetNr') streetNr: string,
   ): Promise<void> {
-    this.accountService.insertAccount(email,firstname,lastname,zip,street,streetNr,password);
+    return this.accountService.insertAccount(email,firstname,lastname,zip,street,streetNr,password);
     }
 
     @Post(':email/plates')
@@ -52,7 +52,7 @@ export class AccountController {
         @Param('email') email: string,
         @Query('plate') plate: string,
     ): Promise<void> {
-        this.accountService.addLicensePlate(email, plate);
+        return this.accountService.addLicensePlate(email, plate);
     }
 
     @Delete(':email/plates')
@@ -60,7 +60,7 @@ export class AccountController {
         @Param('email') email: string,
         @Query('plate') plate: string,
     ): Promise<void> {
-        this.accountService.removeLicensePlate(email, plate);
+        return this.accountService.removeLicensePlate(email, plate);
     }
 
 
