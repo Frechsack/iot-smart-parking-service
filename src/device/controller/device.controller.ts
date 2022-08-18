@@ -56,7 +56,7 @@ export class DeviceController {
   */
   @Get()
   @UseInterceptors(AdminAuthenticationInterceptor)
-  public async get(@Query('page') page: number = 0,@Query('pageSize') pageSize: number = 20): Promise<DeviceDto[]>{
+  public async get(@Query('page') page: number = 0,@Query('pageSize') pageSize: number = 20): Promise<PaginationDto<DeviceDto>>{
     return this.deviceService.getDevices(page,pageSize);
   }
 

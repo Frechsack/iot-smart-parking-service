@@ -67,20 +67,20 @@ export class DeviceService {
   * @param pageSize Die Anzahl an Elementen pro Seite.
   * @returns Die Menge an Geräten.
   */
-  public async getDevices(page: number = 0, pageSize: number = 20): Promise<DeviceDto[]>{
-    const devices = await this.deviceRepository.find({
+  public async getDevices(page: number = 0, pageSize: number = 20): Promise<PaginationDto<DeviceDto>>{
+    const devices = await this.deviceRepository.findAndCount({
       skip: page * pageSize,
       take: pageSize,
       order: { mac: 'ASC'},
       select: { mac: true, parent: { mac: true }, parkingLot: { nr: true}, type: { name: true } }
     });
 
-    const devicePromises = devices.map(it => {
+    const devicePromises = devices[0].map(it => {
       return new Promise<DeviceDto>(async resolve => {
         resolve(new DeviceDto(it.mac, (await it.type).name, (await it.parkingLot)?.nr, (await it.parent)?.mac ));
       });
     });
-    return Promise.all(devicePromises);
+    return new PaginationDto(devices[1], await Promise.all(devicePromises));
   }
 
   /**
