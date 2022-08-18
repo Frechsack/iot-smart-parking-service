@@ -9,6 +9,9 @@ export class Account {
   @Column({type: "varchar", primary: true, length: 50 })
   public email: string;
 
+  @Column({ type: "tinyint", nullable: false })
+  public isAdmin: boolean;
+
   @Column({type: "varchar" })
   public firstname: string;
 
