@@ -1,4 +1,5 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
+import { ParkingLotDto } from '../dto/parking-lot-dto';
 import { ParkingLotService } from '../service/parking-lot.service';
 
 @Controller('parking-lots')
@@ -12,5 +13,10 @@ export class ParkingLotController {
   @Get(':nr/devices')
   public async getDevices(@Param('nr') nr: number, @Query('page') page: number = 0,@Query('pageSize') pageSize: number = 20): Promise<string[]>{
     return this.parkingLotService.getDevicesMac(nr,page,pageSize);
+  }
+
+  @Get()
+  public async get(): Promise<ParkingLotDto[]> {
+    return this.parkingLotService.getParkingLots();
   }
 }
