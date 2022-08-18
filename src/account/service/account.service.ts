@@ -1,4 +1,5 @@
 import { HttpException, Injectable } from '@nestjs/common';
+import { PaginationDto } from 'src/core/dto/pagination-dto';
 import { LoggerService } from 'src/core/service/logger.service';
 import { Account } from 'src/orm/entity/account';
 import { LicensePlate } from 'src/orm/entity/license-plate';
@@ -100,14 +101,14 @@ export class AccountService {
     }
   }
 
-  public async getPayments(email: string, plate: string, page: number = 0, pageSize: number = 20): Promise<PaymentDto[]> {
-    const payments = await this.paymentRepository.find({
+  public async getPayments(email: string, plate: string, page: number = 0, pageSize: number = 20): Promise<PaginationDto<PaymentDto>> {
+    const payments = await this.paymentRepository.findAndCount({
       skip: page * pageSize,
       take: pageSize,
       where: { licensePlate: { plate: plate }, account: { email: email}},
       order: { from: 'DESC' }
     });
-    return payments.map(it => new PaymentDto(it.from, it.to, it.price));
+    return new PaginationDto(payments[1],payments[0].map(it => new PaymentDto(it.from, it.to, it.price)));
   }
 
   public async removeLicensePlate(email: string, plate: string): Promise<void> {

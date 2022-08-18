@@ -1,4 +1,6 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseInterceptors } from '@nestjs/common';
+import { AdminAuthenticationInterceptor } from 'src/account/interceptor/admin-authentication.interceptor';
+import { PaginationDto } from 'src/core/dto/pagination-dto';
 import { DeviceInstruction } from 'src/orm/entity/device-instruction';
 import { DeviceDto } from '../dto/device-dto';
 import { DeviceInstructionDto } from '../dto/device-instruction-dto';
@@ -53,6 +55,7 @@ export class DeviceController {
   * @returns Gibt die Geräte zurück.
   */
   @Get()
+  @UseInterceptors(AdminAuthenticationInterceptor)
   public async get(@Query('page') page: number = 0,@Query('pageSize') pageSize: number = 20): Promise<DeviceDto[]>{
     return this.deviceService.getDevices(page,pageSize);
   }
@@ -63,18 +66,21 @@ export class DeviceController {
   * @returns Gibt das Gerät zurück.
   */
   @Get(':mac')
+  @UseInterceptors(AdminAuthenticationInterceptor)
   public async getOne(@Param('mac') mac: string): Promise<DeviceDto> {
     return this.deviceService.getDevice(mac);
   }
 
 
   @Get(':mac/status')
-  public async getStatus(@Param('mac') mac: string, @Query('page') page: number = 0,@Query('pageSize') pageSize: number = 20 ): Promise<DeviceStatusDto[]> {
+  @UseInterceptors(AdminAuthenticationInterceptor)
+  public async getStatus(@Param('mac') mac: string, @Query('page') page: number = 0,@Query('pageSize') pageSize: number = 20 ): Promise<PaginationDto<DeviceStatusDto>> {
     return this.deviceService.getStatus(mac, page, pageSize);
   }
 
   @Get(':mac/instructions')
-  public async getInstructions(@Param('mac') mac: string, @Query('page') page: number = 0,@Query('pageSize') pageSize: number = 20 ): Promise<DeviceInstructionDto[]> {
+  @UseInterceptors(AdminAuthenticationInterceptor)
+  public async getInstructions(@Param('mac') mac: string, @Query('page') page: number = 0,@Query('pageSize') pageSize: number = 20 ): Promise<PaginationDto<DeviceInstructionDto>> {
     return this.deviceService.getInstructions(mac, page, pageSize);
   }
 

@@ -15,6 +15,7 @@ import { EntityManager } from 'typeorm';
 import { DeviceDto } from '../dto/device-dto';
 import { DeviceStatusDto } from '../dto/device-status-dto';
 import { DeviceInstructionDto } from '../dto/device-instruction-dto';
+import { PaginationDto } from 'src/core/dto/pagination-dto';
 
 /**
 * Stellt Standartfunktionen für die Anlage und modifizierung von Geräten, deren Anweisungen und Status bereit.
@@ -90,20 +91,20 @@ export class DeviceService {
    * @returns Gibt die gefundenen Status zurück.
    */
 
-  public async getStatus(mac: string, page: number = 0, pageSize: number = 20): Promise<DeviceStatusDto[]>{
-    const status = await this.deviceStatusRepository.find({
+  public async getStatus(mac: string, page: number = 0, pageSize: number = 20): Promise<PaginationDto<DeviceStatusDto>>{
+    const status = await this.deviceStatusRepository.findAndCount({
       skip: page * pageSize,
       take: pageSize,
       where: { device: { mac: mac }},
       order: { date: 'DESC'}
     });
 
-    const statusPromises = status.map(it => {
+    const statusPromises = status[0].map(it => {
       return new Promise<DeviceStatusDto>(async resolve => {
         resolve(new DeviceStatusDto((await it.device).mac,it.status,it.date));
       });
     });
-    return Promise.all(statusPromises);
+    return new PaginationDto(status[1],await Promise.all(statusPromises));
   }
 
    /**
@@ -113,20 +114,20 @@ export class DeviceService {
    * @param pageSize Die Anzahl an Elementen pro Seite.
    * @returns Gibt die gefundenen Anweisungen zurück.
    */
-   public async getInstructions(mac: string, page: number = 0, pageSize: number = 20): Promise<DeviceInstructionDto[]>{
-    const instructions = await this.deviceInstructionRepository.find({
+   public async getInstructions(mac: string, page: number = 0, pageSize: number = 20): Promise<PaginationDto<DeviceInstructionDto>>{
+    const instructions = await this.deviceInstructionRepository.findAndCount({
       skip: page * pageSize,
       take: pageSize,
       where: { device: { mac: mac }},
       order: { date: 'DESC'}
     });
 
-    const instructionPromises = instructions.map(is => {
+    const instructionPromises = instructions[0].map(is => {
       return new Promise<DeviceInstructionDto>(async resolve => {
         resolve(new DeviceInstructionDto((await is.device).mac, is.instruction, is.date));
       });
     });
-    return Promise.all(instructionPromises);
+    return new PaginationDto(instructions[1], await Promise.all(instructionPromises));
    }
 
   /**

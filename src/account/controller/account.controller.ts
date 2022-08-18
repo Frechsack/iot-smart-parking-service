@@ -1,4 +1,5 @@
 import { Controller, Get, Param, Query, UseInterceptors, Headers, HttpException, Post, Put, Delete } from '@nestjs/common';
+import { PaginationDto } from 'src/core/dto/pagination-dto';
 import { AccountDto } from '../dto/account-dto';
 import { PaymentDto } from '../dto/payment-dto';
 import { AuthenticationInterceptor, AUTHENTICATION_HEADER_TOKEN } from '../interceptor/authentication.interceptor';
@@ -87,7 +88,7 @@ export class AccountController {
     @Param('plate') plate: string,
     @Query('page') page: number = 0,
     @Query('pageSize') pageSize: number = 20
-  ): Promise<PaymentDto[]> {
+  ): Promise<PaginationDto<PaymentDto>> {
     if(!(await this.jwtService.verify(authHeader)))
       return Promise.reject(new HttpException('Permission denied',403));
 
