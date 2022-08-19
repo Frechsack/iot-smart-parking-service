@@ -25,6 +25,7 @@ export class AccountController {
 
   @Put(':email')
   public async update(
+    @Headers(AUTHENTICATION_HEADER_TOKEN) authHeader: string,
     @Param('email') email: string,
     @Query('password') password?: string,
     @Query('firstname') firstname?: string,
@@ -33,6 +34,13 @@ export class AccountController {
     @Query('street') street?: string,
     @Query('streetNr') streetNr?: string,
   ): Promise<void> {
+    const account = await this.jwtService.authenticated(authHeader);
+    if(account == null)
+      return Promise.reject(new HttpException('Invalid authentication',401));
+    if(email === 'this')
+      email = account.email;
+    if(email !== account.email && !account.isAdmin)
+      return Promise.reject(new HttpException('Invalid authentication',401));
     return  this.accountService.editAccount(email, firstname, lastname, zip, street, streetNr, password);
   }
 
@@ -51,18 +59,34 @@ export class AccountController {
 
     @Post(':email/plates')
     public async addPlate(
+      @Headers(AUTHENTICATION_HEADER_TOKEN) authHeader: string,
         @Param('email') email: string,
         @Query('plate') plate: string,
     ): Promise<void> {
-        return this.accountService.addLicensePlate(email, plate);
+      const account = await this.jwtService.authenticated(authHeader);
+      if(account == null)
+        return Promise.reject(new HttpException('Invalid authentication',401));
+      if(email === 'this')
+        email = account.email;
+      if(email !== account.email && !account.isAdmin)
+        return Promise.reject(new HttpException('Invalid authentication',401));
+      return this.accountService.addLicensePlate(email, plate);
     }
 
     @Delete(':email/plates/:plate')
     public async deletePlate(
+      @Headers(AUTHENTICATION_HEADER_TOKEN) authHeader: string,
         @Param('email') email: string,
         @Param('plate') plate: string,
     ): Promise<void> {
-        return this.accountService.removeLicensePlate(email, plate);
+      const account = await this.jwtService.authenticated(authHeader);
+      if(account == null)
+        return Promise.reject(new HttpException('Invalid authentication',401));
+      if(email === 'this')
+        email = account.email;
+      if(email !== account.email && !account.isAdmin)
+        return Promise.reject(new HttpException('Invalid authentication',401));
+      return this.accountService.removeLicensePlate(email, plate);
     }
 
     @Get(':email')
@@ -70,12 +94,13 @@ export class AccountController {
         @Headers(AUTHENTICATION_HEADER_TOKEN) authHeader: string,
         @Param('email') email: string
     ): Promise<AccountDto>{
-      if(email === 'this') {
-        const account = await this.jwtService.authenticated(authHeader);
-        if(account == null)
-          return Promise.reject(new HttpException('Invalid authentication',401));
-        email = account?.email;
-      }
+      const account = await this.jwtService.authenticated(authHeader);
+      if(account == null)
+        return Promise.reject(new HttpException('Invalid authentication',401));
+      if(email === 'this')
+        email = account.email;
+      if(email !== account.email && !account.isAdmin)
+        return Promise.reject(new HttpException('Invalid authentication',401));
       return this.accountService.getAccount(email);
     }
 
@@ -89,9 +114,13 @@ export class AccountController {
     @Query('page') page: number = 0,
     @Query('pageSize') pageSize: number = 20
   ): Promise<PaginationDto<PaymentDto>> {
-    if(!(await this.jwtService.verify(authHeader)))
-      return Promise.reject(new HttpException('Permission denied',403));
-
+    const account = await this.jwtService.authenticated(authHeader);
+    if(account == null)
+      return Promise.reject(new HttpException('Invalid authentication',401));
+    if(email === 'this')
+      email = account.email;
+    if(email !== account.email && !account.isAdmin)
+      return Promise.reject(new HttpException('Invalid authentication',401));
     return this.accountService.getPayments(email, plate, page, pageSize);
   }
 }
