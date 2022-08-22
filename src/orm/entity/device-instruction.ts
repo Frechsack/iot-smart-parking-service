@@ -7,7 +7,10 @@ export class DeviceInstruction {
   @Column({type:  "datetime", primary: true} )
   public date: Date;
 
-  @Column({type:  "varchar", nullable: false} )
+  @Column({ type: 'varchar', nullable: false, transformer: {
+    from: (it: string) => it.toLowerCase(),
+    to: (it: string) => it.toLowerCase()
+  }})
   public instruction: string;
 
   @ManyToOne(()=> Device, it => it.instructions)
