@@ -22,8 +22,9 @@ import { PlateDetectionModule } from './plate-detection/plate-detection.module';
 import { LicensePlateStatus } from './orm/entity/license-plate-status';
 import { ParkingLotStatus } from './orm/entity/parking-lot-status';
 import { ParkingLotModule } from './parking-lot/parking-lot.module';
-import { DeviceChildren } from './orm/entity/device-children';
 import { WorkflowModule } from './workflow/workflow.module';
+import { DeviceParents } from './orm/entity/device-parents';
+import { ParkingLotGuidingDevices } from './orm/entity/parking-lot-guiding-devices';
 
 @Module({
   imports: [
@@ -50,7 +51,8 @@ import { WorkflowModule } from './workflow/workflow.module';
           DeviceInstruction,
           LicensePlateStatus,
           ParkingLotStatus,
-          DeviceChildren
+          DeviceParents,
+          ParkingLotGuidingDevices
        ],
       synchronize: true,
       //logging: ["query", "error"]

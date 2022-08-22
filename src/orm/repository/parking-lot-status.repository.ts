@@ -23,7 +23,15 @@ export class ParkingLotStatusRepository extends AbstractRepository<ParkingLotSta
     return new ParkingLotStatusRepository(manager.getRepository(ParkingLotStatus));
   }
 
-  public findOneByNr(nr: number): Promise<ParkingLotStatus | null>{
+  public async findOneByNr(nr: number): Promise<ParkingLotStatus | null>{
     return this.findOneBy({ nr: nr });
+  }
+
+  public async findFirstAvailable(): Promise<ParkingLotStatus | null> {
+    return this.findOne({ where: { status: 'true'}, order: { nr: 'DESC' }});
+  }
+
+  public async isParkingLotAvailable(): Promise<boolean> {
+    return (await this.findFirstAvailable()) !== null;
   }
 }

@@ -12,7 +12,9 @@ export class DeviceTypeRepository extends AbstractRepository<DeviceType> {
     { name: DeviceTypeName.SERVO },
     { name: DeviceTypeName.LAMP },
     { name: DeviceTypeName.PARKING_GUIDE_LAMP, parent: DeviceTypeName.LAMP },
-    { name: DeviceTypeName.MOTION_SENSOR }
+    { name: DeviceTypeName.MOTION_SENSOR },
+    { name: DeviceTypeName.ENTER_SERVO, parent: DeviceTypeName.SERVO },
+    { name: DeviceTypeName.EXIT_SERVO, parent: DeviceTypeName.SERVO }
   ];
 
   constructor(

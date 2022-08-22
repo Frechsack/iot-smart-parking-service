@@ -2,10 +2,10 @@ import { ViewColumn, ViewEntity } from "typeorm";
 
 
 @ViewEntity({
-  name: 'device_children',
+  name: 'device_parents',
   expression:
     `SELECT d.mac as 'mac',
-    CONCAT_WS(';',d1.mac,d2.mac,d3.mac,d4.mac,d5.mac,d6.mac,d7.mac,d8.mac,d9.mac,d10.mac,d11.mac,d12.mac,d13.mac,d14.mac,d15.mac,d16.mac,d17.mac,d18.mac,d19.mac) as 'children'
+    CONCAT_WS(';',d1.mac,d2.mac,d3.mac,d4.mac,d5.mac,d6.mac,d7.mac,d8.mac,d9.mac,d10.mac,d11.mac,d12.mac,d13.mac,d14.mac,d15.mac,d16.mac,d17.mac,d18.mac,d19.mac) as 'parents'
     FROM device d
     LEFT JOIN device d1 on d1.mac = d.parent_mac
     LEFT JOIN device d2 on d2.mac = d1.parent_mac
@@ -27,17 +27,17 @@ import { ViewColumn, ViewEntity } from "typeorm";
     LEFT JOIN device d18 on d16.mac = d17.parent_mac
     LEFT JOIN device d19 on d16.mac = d18.parent_mac`
   })
-export class DeviceChildren {
+export class DeviceParents {
 
   @ViewColumn({ name: 'mac' })
   public mac: string;
 
-  @ViewColumn({ name: 'children', transformer: {
+  @ViewColumn({ name: 'parents', transformer: {
     from: (it: string) =>  {
       if(it == null || it === '' || (it.length == 1 && (it[0] == null || it[0] === ''))) return [];
       return it.split(';');
     },
     to: () => { throw new Error('Data can not be written.') }
   }})
-  public children: string[];
+  public parents: string[];
 }

@@ -5,7 +5,10 @@ import { Device } from "./device";
 @Entity({ name: 'device_status'})
 export class DeviceStatus{
 
-  @Column({ type: 'varchar', nullable: false})
+  @Column({ type: 'varchar', nullable: false, transformer: {
+    from: (it: string) => it.toLowerCase(),
+    to: (it: string) => it.toLowerCase()
+  }})
   public status: string;
 
   @Column({ type: 'datetime', primary: true})

@@ -79,4 +79,9 @@ export class CommunicationService {
     this.instructionLane.pipe(filter(it => it.isInternalMessage()))
       .subscribe(() => this.mqttClient.publish('scan',''));
   }
+
+  public async sendInstruction(mac: string, instruction: any): Promise<void> {
+    const message = new InstructionMessage(mac,instruction,MessageSource.INTERNAL);
+    this.instructionLane.next(message);
+  }
 }

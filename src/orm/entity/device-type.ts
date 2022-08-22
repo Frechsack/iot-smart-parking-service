@@ -3,10 +3,12 @@ import { Device } from "./device";
 
 export enum DeviceTypeName {
   LAMP='LAMP',
+  SERVO='SERVO',
   PARKING_GUIDE_LAMP='PARKING_GUIDE_LAMP',
   CWO_SENSOR='CWO_SENSOR',
-  SERVO='SERVO',
-  MOTION_SENSOR='MOTION_SENSOR'
+  MOTION_SENSOR='MOTION_SENSOR',
+  ENTER_SERVO='ENTER_SERVO',
+  EXIT_SERVO="EXIT_SERVO"
 }
 
 export function valueOf(name: string): DeviceTypeName{

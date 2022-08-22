@@ -1,20 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
-import { DeviceChildren } from '../entity/device-children';
+import { DeviceParents } from '../entity/device-parents';
 import { AbstractRepository } from './abstract.repository';
 
 @Injectable()
-export class DeviceChildrenRepository extends AbstractRepository<DeviceChildren> {
+export class DeviceParentsRepository extends AbstractRepository<DeviceParents> {
 
   constructor(
-    @InjectRepository(DeviceChildren)
-    public readonly repository: Repository<DeviceChildren>
+    @InjectRepository(DeviceParents)
+    public readonly repository: Repository<DeviceParents>
   ){
     super(repository);
   }
 
-  public async findOneByMac(mac: string): Promise<DeviceChildren | null> {
+  public async findOneByMac(mac: string): Promise<DeviceParents | null> {
     return this.findOne({ where: { mac: mac }});
   }
 
@@ -23,7 +23,7 @@ export class DeviceChildrenRepository extends AbstractRepository<DeviceChildren>
   * @param manager Der EntityManager, welcher die Transaktion durchführt.
   * @returns Gibt das zu verwendende Repository zurück.
   */
-  public forTransaction(manager: EntityManager): DeviceChildrenRepository {
-    return new DeviceChildrenRepository(manager.getRepository(DeviceChildren));
+  public forTransaction(manager: EntityManager): DeviceParentsRepository {
+    return new DeviceParentsRepository(manager.getRepository(DeviceParents));
   }
 }

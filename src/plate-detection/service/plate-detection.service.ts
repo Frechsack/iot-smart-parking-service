@@ -9,12 +9,22 @@ import { LicensePlateRepository } from 'src/orm/repository/license-plate.reposit
 import { LicensePlateStatusRepository } from 'src/orm/repository/license-plate-status.repository';
 const fs = require('fs').promises
 import { Mutex } from 'async-mutex';
+import { ParkingLotStatusRepository } from 'src/orm/repository/parking-lot-status.repository';
+import { UtilService } from 'src/core/service/util.service';
+
+const DETECTION_TIMEOUT_SECONDS = 20;
 
 @Injectable()
 export class PlateDetectionService {
 
   private readonly detectedPlatesSource = new Subject<DetectedLicensePlate>();
 
+  /**
+  * Pipe mit erkannten Kennzeichen.
+  * Ein Kennzeichen wird erkannt wenn:
+  * 1. Das Kennzeichen aktuell nicht eingecheckt ist.
+  * 2. Das Parkhaus noch Kapazitäten hat.
+  */
   public readonly detectedPlates = this.detectedPlatesSource.asObservable();
 
   private readonly childProcessMap = new Map<LicensePlatePhotoTypeName,ChildProcess>();
@@ -27,12 +37,15 @@ export class PlateDetectionService {
 
   private readonly ignoreErrorMap = new Map<LicensePlatePhotoTypeName,number>();
 
+  private readonly latestDetectionMap = new Map<LicensePlatePhotoTypeName,Date>();
 
   constructor(
     private readonly configService: ConfigService,
     private readonly loggerService: LoggerService,
     private readonly licensePlateRepository: LicensePlateRepository,
-    private readonly licensePlateStatusRepository: LicensePlateStatusRepository
+    private readonly licensePlateStatusRepository: LicensePlateStatusRepository,
+    private readonly parkingLotStatusRepository: ParkingLotStatusRepository,
+    private readonly utilService: UtilService
    ){
     loggerService.context = PlateDetectionService.name;
     for(let processType in LicensePlatePhotoTypeName){
@@ -139,10 +152,20 @@ export class PlateDetectionService {
     const VIDEO_DEVICE = this.videoDevicesMap.get(process)!;
 
     const funProcessPossiblePlates = async () => {
+
+      // Prüfe zuerst ob Parkhaus noch Kapazitäten übrig hat.
+      // Wenn nicht darf Kennzeichen nicht erkannt werden.
+      const isParkingLotAvailable = await this.utilService.countAvailableParkingLots();
+      if(isParkingLotAvailable <= 0) return;
+
+      // Nach erfolgreicher erkennung, muss die Erkennung für Zeit X deaktiviert werden.
+      const latestDetection = this.latestDetectionMap.get(process);
+      if(latestDetection !== undefined && (latestDetection.getTime() >= Date.now() - DETECTION_TIMEOUT_SECONDS * 1000))
+        return;
+
       for(const licensePlate of plates){
         // Doppelregistrieung verhindern --> Zwischenspeichern in Map.
         if(this.lastLicensePlateMap.get(process) === licensePlate.licensePlate) continue;
-        // TODO: Evtl. lock für Zeit X.
 
         // Prüfe ob Kennzeichen in Datenbank
         if(!(await this.licensePlateRepository.existsByPlate(licensePlate.licensePlate))) continue;
@@ -157,10 +180,11 @@ export class PlateDetectionService {
         if(await this.isProcessRunning(process))
           await this.stopPlateRecognition(process);
 
-        // Mache Snapshot
         try {
+          // Mache Snapshot
           const snapshotPath = await this.takeSnapshot(process,VIDEO_DEVICE);
           this.lastLicensePlateMap.set(process,licensePlate.licensePlate);
+          this.latestDetectionMap.set(process,new Date());
           this.detectedPlatesSource.next(new DetectedLicensePlate(licensePlate.licensePlate,snapshotPath,process));
         }
         catch (err){
