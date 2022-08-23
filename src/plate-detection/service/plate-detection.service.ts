@@ -179,7 +179,17 @@ export class PlateDetectionService {
         try {
           // Mache Snapshot
           const snapshotPath = await this.takeSnapshot(process,VIDEO_DEVICE);
+
           this.lastLicensePlateMap.set(process,licensePlate.licensePlate);
+
+          // Sonderfälle: Bei Aus- und Einfahrt muss das Kennzeichen wieder für den anderen Prozess freigeschaltet werden
+          const oppositeProcess = process === LicensePlatePhotoTypeName.ENTER 
+            ? LicensePlatePhotoTypeName.EXIT
+            : LicensePlatePhotoTypeName.ENTER;
+          const lastEnterLicensePlate = this.lastLicensePlateMap.get(oppositeProcess);
+          if(lastEnterLicensePlate == licensePlate.licensePlate)
+            this.lastLicensePlateMap.set(oppositeProcess,'');
+
           this.latestDetectionMap.set(process,new Date());
           this.detectedPlatesSource.next(new DetectedLicensePlate(licensePlate.licensePlate,snapshotPath,process));
         }
