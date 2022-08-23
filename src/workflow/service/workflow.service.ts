@@ -150,7 +150,7 @@ export class WorkflowService {
     }
 
     // Schalte alle Parkleitsystem-lampen ab
-    const devices = await this.parkingLotGuidingDevicesRepository.find();
+    const devices = await this.deviceRepository.findBy({ type: { name: DeviceTypeName.PARKING_GUIDE_LAMP }});
     await Promise.all(devices.map(async it => await this.communicationService.sendInstruction(it.mac,false)));
   }
 

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, Repository , Not } from 'typeorm';
+import { EntityManager, Repository , Not, IsNull } from 'typeorm';
 import { ParkingLotStatus } from '../entity/parking-lot-status';
 import { AbstractRepository } from './abstract.repository';
 
@@ -28,7 +28,7 @@ export class ParkingLotStatusRepository extends AbstractRepository<ParkingLotSta
   }
 
   public async findFirstAvailable(): Promise<ParkingLotStatus | null> {
-    return this.findOne({ where: { status: Not('true')}, order: { nr: 'DESC' }});
+    return this.findOne({ where: [{ status: Not('true')}, { status: IsNull()}], order: { nr: 'ASC' }});
   }
 
   public async isParkingLotAvailable(): Promise<boolean> {
