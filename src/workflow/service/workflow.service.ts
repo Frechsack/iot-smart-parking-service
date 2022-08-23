@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { filter } from 'rxjs';
 import { CommunicationService } from 'src/core/service/communication.service';
-import { LicensePlatePhotoType, LicensePlatePhotoTypeName } from 'src/orm/entity/license-plate-photo-type';
+import { LicensePlatePhotoTypeName } from 'src/orm/entity/license-plate-photo-type';
 import { DetectedLicensePlate } from 'src/plate-detection/detected-license-plate';
 import { PlateDetectionService } from 'src/plate-detection/service/plate-detection.service';
 import { readFile, unlink } from 'fs';
@@ -14,7 +13,6 @@ import { EntityManager } from 'typeorm';
 import { ParkingLotRepository } from 'src/orm/repository/parking-lot.repository';
 import { ParkingLotStatusRepository } from 'src/orm/repository/parking-lot-status.repository';
 import { ParkingLotGuidingDevicesRepository } from 'src/orm/repository/parking-lot-guiding-devices.repository';
-import { InstructionMessage } from 'src/core/messages/instruction-message';
 import { DeviceRepository } from 'src/orm/repository/device.repository';
 import { DeviceTypeName } from 'src/orm/entity/device-type';
 import { UtilService } from 'src/core/service/util.service';
@@ -165,11 +163,11 @@ export class WorkflowService {
     });
   }
 
-  private async readFile(path: string): Promise<Uint8Array> {
+  private async readFile(path: string): Promise<Buffer> {
     return new Promise(async (resolve, reject) => {
       readFile(path,(error,data) => {
         if(error) reject(error);
-        else resolve(new Uint8Array(data.buffer));
+        else resolve(data);
       });
     });
   }

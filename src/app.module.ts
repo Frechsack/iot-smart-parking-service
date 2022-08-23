@@ -55,7 +55,7 @@ import { ParkingLotGuidingDevices } from './orm/entity/parking-lot-guiding-devic
           ParkingLotGuidingDevices
        ],
       synchronize: true,
-      //logging: ["query", "error"]
+    //  logging: ["query", "error"]
     }),
     DeviceModule,
     AccountModule,

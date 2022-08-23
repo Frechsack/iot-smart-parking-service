@@ -6,8 +6,8 @@ import { Device } from "./device";
 export class DeviceStatus{
 
   @Column({ type: 'varchar', nullable: false, transformer: {
-    from: (it: string) => it.toLowerCase(),
-    to: (it: string) => it.toLowerCase()
+    from: (it: any) => `${it}`.toLowerCase(),
+    to: (it: string) => `${it}`.toLowerCase()
   }})
   public status: string;
 

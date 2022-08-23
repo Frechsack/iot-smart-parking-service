@@ -46,11 +46,11 @@ export class CommunicationService {
      loggerService: LoggerService
    ){
     loggerService.context = CommunicationService.name;
-    this.mqttClient = connect(`mqtt://${configService.get('MQTT_HOST')}:${configService.get('MQTT_PORT')}`,{ keepalive: 10, reconnectPeriod: 1000 });
-    this.mqttClient.subscribe('instruction');
-    this.mqttClient.subscribe('status');
-    this.mqttClient.subscribe('scan');
-    this.mqttClient.subscribe('register');
+    this.mqttClient = connect(`mqtt://${configService.get('MQTT_HOST')}:${configService.get('MQTT_PORT')}`,{ keepalive: 10, reconnectPeriod: 1000, protocolVersion: 5 });
+    this.mqttClient.subscribe('instruction', { nl: true, qos: 0 });
+    this.mqttClient.subscribe('status', { nl: true, qos: 0 });
+    this.mqttClient.subscribe('scan', { nl: true, qos: 0 });
+    this.mqttClient.subscribe('register', { nl: true, qos: 0 });
 
     // Wandel extern empfangende Nachrichten per MQTT in Messages um.
     this.mqttClient.on('message',(topic: string, message: Buffer) => {
@@ -81,7 +81,7 @@ export class CommunicationService {
   }
 
   public async sendInstruction(mac: string, instruction: any): Promise<void> {
-    const message = new InstructionMessage(mac,instruction,MessageSource.INTERNAL);
+    const message = new InstructionMessage(mac,`${instruction}`.toLowerCase(),MessageSource.INTERNAL);
     this.instructionLane.next(message);
   }
 }

@@ -151,7 +151,7 @@ export class DeviceService {
       return deviceInstruction;
     }
     catch(e) {
-      this.loggerService.error(`Update of device-instruction failed, error: "${e}"`);
+      this.loggerService.error(`Update of device-instruction failed, mac: "${mac}", instruction: "${instruction}", error: "${e}"`);
       throw e;
     }
   }
