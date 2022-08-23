@@ -4,12 +4,15 @@ import { Device } from "./device";
 @Entity({ name: "device_instruction"})
 export class DeviceInstruction {
 
-  @Column({type:  "datetime", primary: true} )
+  @Column({type:  "datetime", primary: true, precision: 6 } )
   public date: Date;
 
+  /**
+  * Die Anweisung wird automatisch in Kleinschreibung konvertiert.
+  */
   @Column({ type: 'varchar', nullable: false, transformer: {
-    from: (it: string) => it.toLowerCase(),
-    to: (it: string) => it.toLowerCase()
+    from: (it: string) => `${it}`.toLowerCase(),
+    to: (it: string) =>  `${it}`.toLowerCase()
   }})
   public instruction: string;
 

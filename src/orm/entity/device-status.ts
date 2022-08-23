@@ -5,7 +5,10 @@ import { Device } from "./device";
 @Entity({ name: 'device_status'})
 export class DeviceStatus{
 
-  @Column({ type: 'varchar', nullable: false, transformer: {
+  /**
+  * Der Status wird automatisch in Kleinschreibung konvertiert.
+  */
+  @Column({ type: 'varchar', nullable: false , precision: 6, transformer: {
     from: (it: any) => `${it}`.toLowerCase(),
     to: (it: string) => `${it}`.toLowerCase()
   }})

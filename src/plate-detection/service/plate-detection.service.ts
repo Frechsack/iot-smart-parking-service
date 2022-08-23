@@ -9,7 +9,6 @@ import { LicensePlateRepository } from 'src/orm/repository/license-plate.reposit
 import { LicensePlateStatusRepository } from 'src/orm/repository/license-plate-status.repository';
 const fs = require('fs').promises
 import { Mutex } from 'async-mutex';
-import { ParkingLotStatusRepository } from 'src/orm/repository/parking-lot-status.repository';
 import { UtilService } from 'src/core/service/util.service';
 
 const DETECTION_TIMEOUT_SECONDS = 20;
@@ -44,7 +43,6 @@ export class PlateDetectionService {
     private readonly loggerService: LoggerService,
     private readonly licensePlateRepository: LicensePlateRepository,
     private readonly licensePlateStatusRepository: LicensePlateStatusRepository,
-    private readonly parkingLotStatusRepository: ParkingLotStatusRepository,
     private readonly utilService: UtilService
    ){
     loggerService.context = PlateDetectionService.name;
@@ -64,8 +62,6 @@ export class PlateDetectionService {
         loggerService.warn(`Licenseplate recognition camera is missing, type: "${processType}"`);
       }
     }
-
-    this.detectedPlates.subscribe(it => console.log(it));
     // Starte Erkennung für alle.
     this.videoDevicesMap.forEach((value, key) => this.startPlateRecognition(key));
   }
