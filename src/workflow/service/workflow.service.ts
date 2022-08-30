@@ -93,7 +93,7 @@ export class WorkflowService {
       this.enableParkingGuideSystem([ parkingLotGuideDevice.mac, ...parkingLotGuideDevice.parents ]);
 
       // Schalte Einfahrschranken
-      const enterServos = await deviceRepository.findBy({ type: { name: DeviceTypeName.ENTER_SERVO }});
+      const enterServos = await deviceRepository.findBy({ type: { name: DeviceTypeName.ENTER_BARRIER }});
       enterServos.forEach(it => this.utilService.openServoForInterval(it.mac,10));
     }
 
@@ -124,7 +124,7 @@ export class WorkflowService {
       licensePlatePhoto = await this.licensePlatePhotoRepository.save(licensePlatePhoto);
 
       // Schalte Ausfahrschranken
-      const enterServos = await deviceRepository.findBy({ type: { name: DeviceTypeName.EXIT_SERVO }});
+      const enterServos = await deviceRepository.findBy({ type: { name: DeviceTypeName.EXIT_BARRIER }});
       enterServos.forEach(it => this.utilService.openServoForInterval(it.mac,10));
     };
     this.licensePlateRepository.runTransaction(transaction);
