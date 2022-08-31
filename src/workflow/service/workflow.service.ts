@@ -16,6 +16,9 @@ import { ParkingLotGuidingDevicesRepository } from 'src/orm/repository/parking-l
 import { DeviceRepository } from 'src/orm/repository/device.repository';
 import { DeviceTypeName } from 'src/orm/entity/device-type';
 import { UtilService } from 'src/core/service/util.service';
+import { Payment } from 'src/orm/entity/payment';
+import { AccountRepository } from 'src/orm/repository/account.repository';
+import { PaymentRepository } from 'src/orm/repository/payment.repository';
 
 const PARKING_GUIDE_SYSTEM_RUNTIME_SECONDS = 30;
 
@@ -30,12 +33,12 @@ export class WorkflowService {
     private readonly licensePlatePhotoRepository: LicensePlatePhotoRepository,
     private readonly licensePlatePhotoTypeRepository: LicensePlatePhotoTypeRepository,
     private readonly licensePlateRepository: LicensePlateRepository,
-    private readonly parkingLotRepository: ParkingLotRepository,
     private readonly parkingLotStatusRepository: ParkingLotStatusRepository,
     private readonly loggerService: LoggerService,
     private readonly parkingLotGuidingDevicesRepository: ParkingLotGuidingDevicesRepository,
     private readonly deviceRepository: DeviceRepository,
-    private readonly utilService: UtilService
+    private readonly utilService: UtilService,
+    private readonly paymentRepository: PaymentRepository
   ){
     this.loggerService.context = WorkflowService.name;
 
@@ -46,8 +49,15 @@ export class WorkflowService {
       else
         this.startExitWorkflow(it);
     });
+
+    // Initial display initialisieren
+    setTimeout(() => this.synchronizeSpaceDisplays(), 2000);
   }
 
+  /**
+  * Startet den Workflow führ die Einfahrt eines erkannten Kennzeichens.
+  * @param plate Das erkannte Kennzeichen inkl. Meta-Informationen der Kennzeichenerkennung.
+  */
   public async startEnterWorkflow(plate: DetectedLicensePlate): Promise<void> {
     const transaction = async (manager: EntityManager): Promise<void> => {
       const licensePlateRepository = this.licensePlateRepository.forTransaction(manager);
@@ -80,6 +90,9 @@ export class WorkflowService {
       licensePlatePhoto.type = Promise.resolve((await licensePlatePhotoTypeRepository.findOneByName(LicensePlatePhotoTypeName.ENTER))!);
       licensePlatePhoto = await this.licensePlatePhotoRepository.save(licensePlatePhoto);
 
+      // Update Displays
+      this.synchronizeSpaceDisplays();
+
       // Starte Parkleitsystem für X-Sekunden
       const parkingLotGuideDevice = await this.parkingLotGuidingDevicesRepository.findOneByNr(parkingLotStatus.nr);
       if(parkingLotGuideDevice == null){
@@ -94,17 +107,22 @@ export class WorkflowService {
 
       // Schalte Einfahrschranken
       const enterServos = await deviceRepository.findBy({ type: { name: DeviceTypeName.ENTER_BARRIER }});
-      enterServos.forEach(it => this.utilService.openServoForInterval(it.mac,10));
+      enterServos.forEach(it => this.utilService.openServoForInterval(it.mac));
     }
 
     await this.licensePlateRepository.runTransaction(transaction);
   }
 
+  /**
+  * Startet den Workflow führ die Ausfahrt eines erkannten Kennzeichens.
+  * @param plate Das erkannte Kennzeichen inkl. Meta-Informationen der Kennzeichenerkennung.
+  */
   public async startExitWorkflow(plate: DetectedLicensePlate){
     const transaction = async (manager: EntityManager): Promise<void> => {
       const licensePlateRepository = this.licensePlateRepository.forTransaction(manager);
       const licensePlatePhotoTypeRepository = this.licensePlatePhotoTypeRepository.forTransaction(manager);
       const deviceRepository = this.deviceRepository.forTransaction(manager);
+      const paymentRepository = this.paymentRepository.forTransaction(manager);
 
       // Bild auslesen & löschen
       this.loggerService.log('Exit-Workflow started.');
@@ -115,21 +133,57 @@ export class WorkflowService {
       if(licensePlate == null)
         throw new Error(`License-plate does not exists, plate: "${plate.licensePlate}"`);
 
+      // Finde letztes Einfahrtbild für Kennzeichen
+      const enterLicensePlatePhoto = await this.licensePlatePhotoRepository.findLatestByPlate(licensePlate.plate);
+      if(enterLicensePlatePhoto == null || (await enterLicensePlatePhoto.type).name === LicensePlatePhotoTypeName.EXIT){
+        // Fehler wenn Kennzeichen nie eingefahren ist.
+        this.loggerService.error(`No matching enter image, plate: "${licensePlate.plate}"`);
+        throw new Error(`No matching enter image, plate: "${licensePlate.plate}"`);
+      }
+
       // Speicher Bild in DB --> Dadurch wird Kennzeichen als ausgecheckt makiert.
-      let licensePlatePhoto = new LicensePlatePhoto();
-      licensePlatePhoto.date = new Date();
-      licensePlatePhoto.image = image;
-      licensePlatePhoto.licensePlate = Promise.resolve(licensePlate);
-      licensePlatePhoto.type = Promise.resolve((await licensePlatePhotoTypeRepository.findOneByName(LicensePlatePhotoTypeName.EXIT))!);
-      licensePlatePhoto = await this.licensePlatePhotoRepository.save(licensePlatePhoto);
+      let exitLicensePlatePhoto = new LicensePlatePhoto();
+      exitLicensePlatePhoto.date = new Date();
+      exitLicensePlatePhoto.image = image;
+      exitLicensePlatePhoto.licensePlate = Promise.resolve(licensePlate);
+      exitLicensePlatePhoto.type = Promise.resolve((await licensePlatePhotoTypeRepository.findOneByName(LicensePlatePhotoTypeName.EXIT))!);
+      exitLicensePlatePhoto = await this.licensePlatePhotoRepository.save(exitLicensePlatePhoto);
+
+      // Erstelle payment.
+      const payment = new Payment();
+      payment.from = enterLicensePlatePhoto.date;
+      payment.to = exitLicensePlatePhoto.date;
+      payment.licensePlate = Promise.resolve(licensePlate);
+      payment.account = Promise.resolve(await licensePlate.account);
+      payment.price = await this.utilService.calculatePrice(payment.from,payment.to);
+      await paymentRepository.save(payment);
+      this.loggerService.log(`Created payment, plate: "${licensePlate.plate}", email: "${(await payment.account).email}", price: "${payment.price}", to: "${payment.to}", from: "${payment.from}"`);
+
+      // Update Displays
+      this.synchronizeSpaceDisplays();
 
       // Schalte Ausfahrschranken
       const enterServos = await deviceRepository.findBy({ type: { name: DeviceTypeName.EXIT_BARRIER }});
-      enterServos.forEach(it => this.utilService.openServoForInterval(it.mac,10));
+      enterServos.forEach(it => this.utilService.openServoForInterval(it.mac));
     };
     this.licensePlateRepository.runTransaction(transaction);
   }
 
+  /**
+  * Updated alle Anzeigen, welche die Anzahl an verfügbaren Parkplätzen anzeigen.
+  */
+  private async synchronizeSpaceDisplays(){
+    // Update Displays
+    const spaceDisplays = await this.deviceRepository.findBy({ type: { name: DeviceTypeName.SPACE_DISPLAY }});
+    const availableParkingLots = await this.utilService.countAvailableParkingLots();
+    spaceDisplays.forEach(it => this.communicationService.sendInstruction(it.mac,availableParkingLots));
+  }
+
+  /**
+  * Aktiviert das Parkleitsystem für die angegebenen Geräte. Es wird davon ausgegangen das die übergebenen Geräte zum Parkleitsystem gehören.
+  * Sollte das System bereits in Verwendung sein, wird es deaktiviert und erneut aktiviert.
+  * @param devices Die zu schaltenden Geräte.
+  */
   private async enableParkingGuideSystem(devices: string[]): Promise<void> {
     this.latestEnterWorkflowStart = new Date();
     // Deaktivierte alle bisherigen Parking-Guide-Lampen, muss erzwungen werden.
@@ -141,6 +195,11 @@ export class WorkflowService {
     setTimeout(async () => this.disableParkingGuideSystem(), PARKING_GUIDE_SYSTEM_RUNTIME_SECONDS * 1000);
   }
 
+  /**
+  * Deaktiviert das Parkleitsystem.
+  * @param isForced Gibt an, ob eine deaktivierung erzwungen werden soll.
+  * Wurde sie nicht erzwungen, dann kann der Aufruf nicht erfolgreich sein, sollte das Parkleitsystem noch nicht für ein vorgegebenes Interval aktiv sein.
+  */
   private async disableParkingGuideSystem(isForced: boolean = false): Promise<void> {
     if(!isForced) {
       const latestStart = this.latestEnterWorkflowStart!.getTime();

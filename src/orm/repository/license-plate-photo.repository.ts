@@ -22,4 +22,8 @@ export class LicensePlatePhotoRepository extends AbstractRepository<LicensePlate
   public forTransaction(manager: EntityManager): LicensePlatePhotoRepository {
     return new LicensePlatePhotoRepository(manager.getRepository(LicensePlatePhoto));
   }
+
+  public findLatestByPlate(plate: string): Promise<LicensePlatePhoto | null> {
+    return this.findOne({ order: { date: 'DESC' } , where: { licensePlate: { plate: plate }}});
+  }
 }

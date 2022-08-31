@@ -8,7 +8,8 @@ export enum DeviceTypeName {
   CWO_SENSOR='CWO_SENSOR',
   MOTION_SENSOR='MOTION_SENSOR',
   ENTER_BARRIER='ENTER_BARRIER',
-  EXIT_BARRIER="EXIT_BARRIER"
+  EXIT_BARRIER="EXIT_BARRIER",
+  SPACE_DISPLAY='SPACE_DISPLAY'
 }
 
 export function valueOf(name: string): DeviceTypeName{

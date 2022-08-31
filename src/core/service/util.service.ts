@@ -22,17 +22,18 @@ export class UtilService {
 
 
 
-  public async openServoForInterval(mac: string, intervalInSeconds = 10): Promise<void> {
+  public async openServoForInterval(mac: string, intervalInSeconds = 15): Promise<void> {
     const funCloseServo = async (mac: string, closeAt: Date) => {
       const latestServoStatus = this.latestServoStatusMap.get(mac);
       if(latestServoStatus === closeAt)
         await this.communicationService.sendInstruction(mac, false);
     }
 
-    const closeAt = new Date(Date.now() + intervalInSeconds * 1000);
+    const interval = intervalInSeconds * 1000;
+    const closeAt = new Date(Date.now() + interval);
     this.latestServoStatusMap.set(mac,closeAt);
     this.communicationService.sendInstruction(mac,true);
-    setTimeout(async () => funCloseServo(mac,closeAt));
+    setTimeout(async () => funCloseServo(mac,closeAt),interval);
   }
 
   public async countAvailableParkingLots(){
@@ -44,5 +45,8 @@ export class UtilService {
       return availableParkingLots;
   }
 
-
+  public async calculatePrice(from: Date, to: Date): Promise<number>{
+    const milis = to.getTime() - from.getTime();
+    return milis / 1000 * 0.00035;
+  }
 }
