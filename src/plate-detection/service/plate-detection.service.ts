@@ -140,6 +140,24 @@ export class PlateDetectionService {
     .filter(it => it.confidence >= CONFIDENCE_MIN);
   }
 
+  /**
+  * Triggert manuel eine Kennzeichenerkennung bei Einfahrt. Dabei wird der reguläre Prozess durchlaufen.
+  * Es kann nur ein Kennzeichen auf einem Prozess erkannt werden (ENTER, EXIT), für den eine Kammera hinterlegt wurde.
+  * @param plate Das erkannte Kennzeichen.
+  */
+  public async enter(plate: string): Promise<void> {
+    await this.processPossiblePlates(LicensePlatePhotoTypeName.ENTER,[{ confidence: 100, licensePlate: plate }]);
+  }
+
+  /**
+  * Triggert manuel eine Kennzeichenerkennung bei Ausfahrt. Dabei wird der reguläre Prozess durchlaufen.
+  * Es kann nur ein Kennzeichen auf einem Prozess erkannt werden (ENTER, EXIT), für den eine Kammera hinterlegt wurde.
+  * @param plate Das erkannte Kennzeichen.
+  */
+  public async exit(plate: string): Promise<void> {
+    await this.processPossiblePlates(LicensePlatePhotoTypeName.EXIT,[{ confidence: 100, licensePlate: plate }]);
+  }
+
   private async processPossiblePlates(
     process: LicensePlatePhotoTypeName,
     plates: {licensePlate: string, confidence: number}[]
@@ -183,7 +201,7 @@ export class PlateDetectionService {
           this.lastLicensePlateMap.set(process,licensePlate.licensePlate);
 
           // Sonderfälle: Bei Aus- und Einfahrt muss das Kennzeichen wieder für den anderen Prozess freigeschaltet werden
-          const oppositeProcess = process === LicensePlatePhotoTypeName.ENTER 
+          const oppositeProcess = process === LicensePlatePhotoTypeName.ENTER
             ? LicensePlatePhotoTypeName.EXIT
             : LicensePlatePhotoTypeName.ENTER;
           const lastEnterLicensePlate = this.lastLicensePlateMap.get(oppositeProcess);
