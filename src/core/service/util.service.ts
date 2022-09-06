@@ -45,6 +45,13 @@ export class UtilService {
       return availableParkingLots;
   }
 
+
+    /**
+     * Preis calculation, jede Angefangene Stunde 1€
+     * @param from Einfuhrdatum in das Parkhaus 
+     * @param to Ausfuhrdatum aus dem Parkhaus
+     * @returns Preis für das Parken
+     */
   public async calculatePrice(from: Date, to: Date): Promise<number>{
       const milis = to.getTime() - from.getTime();
       const secs = milis / 1000;
