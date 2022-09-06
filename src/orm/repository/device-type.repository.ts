@@ -11,6 +11,7 @@ export class DeviceTypeRepository extends AbstractRepository<DeviceType> {
     { name: DeviceTypeName.CWO_SENSOR },
     { name: DeviceTypeName.BARRIER },
     { name: DeviceTypeName.LAMP },
+    { name: DeviceTypeName.FAN },
     { name: DeviceTypeName.SPACE_DISPLAY },
     { name: DeviceTypeName.PARKING_GUIDE_LAMP, parent: DeviceTypeName.LAMP },
     { name: DeviceTypeName.MOTION_SENSOR },

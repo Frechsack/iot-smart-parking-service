@@ -4,7 +4,7 @@ import { LicensePlateStatusRepository } from 'src/orm/repository/license-plate-s
 import { ParkingLotRepository } from 'src/orm/repository/parking-lot.repository';
 import { CommunicationService } from './communication.service';
 import { LoggerService } from './logger.service';
-
+import { readFile, unlink } from 'fs';
 
 @Injectable()
 export class UtilService {
@@ -48,5 +48,23 @@ export class UtilService {
   public async calculatePrice(from: Date, to: Date): Promise<number>{
     const milis = to.getTime() - from.getTime();
     return milis / 1000 * 0.00035;
+  }
+
+  public async deleteFile(path: string): Promise<void> {
+    return new Promise(async (resolve, reject) => {
+      unlink(path,(error) => {
+        if(error) reject(error);
+        else resolve();
+      });
+    });
+  }
+
+  public async readFile(path: string): Promise<Buffer> {
+    return new Promise(async (resolve, reject) => {
+      readFile(path,(error,data) => {
+        if(error) reject(error);
+        else resolve(data);
+      });
+    });
   }
 }

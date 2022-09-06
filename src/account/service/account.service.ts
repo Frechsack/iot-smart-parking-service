@@ -73,7 +73,7 @@ export class AccountService {
 
         }
 
-        return Promise.reject(new HttpException("Try a better password next time looser", 42069));
+        return Promise.reject(new HttpException("Try a better password next time looser", 401));
     }
 
   public async insertAccount(email: string, firstname: string, lastname: string, zip: string, street: string, streetNr: string, password: string): Promise<void> {

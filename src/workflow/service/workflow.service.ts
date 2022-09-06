@@ -3,7 +3,6 @@ import { CommunicationService } from 'src/core/service/communication.service';
 import { LicensePlatePhotoTypeName } from 'src/orm/entity/license-plate-photo-type';
 import { DetectedLicensePlate } from 'src/plate-detection/detected-license-plate';
 import { PlateDetectionService } from 'src/plate-detection/service/plate-detection.service';
-import { readFile, unlink } from 'fs';
 import { LoggerService } from 'src/core/service/logger.service';
 import { LicensePlatePhotoRepository } from 'src/orm/repository/license-plate-photo.repository';
 import { LicensePlatePhotoTypeRepository } from 'src/orm/repository/license-plate-photo-type.repository';
@@ -19,6 +18,7 @@ import { UtilService } from 'src/core/service/util.service';
 import { Payment } from 'src/orm/entity/payment';
 import { AccountRepository } from 'src/orm/repository/account.repository';
 import { PaymentRepository } from 'src/orm/repository/payment.repository';
+import { filter } from 'rxjs';
 
 const PARKING_GUIDE_SYSTEM_RUNTIME_SECONDS = 30;
 
@@ -42,12 +42,29 @@ export class WorkflowService {
   ){
     this.loggerService.context = WorkflowService.name;
 
+    // Gefundene Kennzeichen
     this.plateDetectionService.detectedPlates
     .subscribe(async it => {
       if(it.licensePlatePhotoType === LicensePlatePhotoTypeName.ENTER)
         this.startEnterWorkflow(it);
       else
         this.startExitWorkflow(it);
+    });
+
+    // Klimasteuerungsevent
+    this.communicationService.statusLane
+    .pipe(filter(it => it.isExternalMessage()))
+    .subscribe(async it => {
+      const device = await this.deviceRepository.findOneByMac(it.mac);
+      if(device == null) return;
+      if((await device.type).name !== DeviceTypeName.CWO_SENSOR) return;
+      const status = it.status;
+      const fans = await this.deviceRepository.findBy({ type: { name: DeviceTypeName.FAN }});
+
+
+      // TODO: Test ob Co2 zu hoch
+      fans.forEach(it => this.communicationService.sendInstruction(it.mac, true));
+      fans.forEach(it => this.communicationService.sendInstruction(it.mac, false));
     });
 
     // Initial display initialisieren
@@ -75,8 +92,8 @@ export class WorkflowService {
 
       // Bild auslesen & löschen
       this.loggerService.log('Enter-Workflow started.');
-      let image = await this.readFile(plate.licensePlatePhotoPath);
-      this.deleteFile(plate.licensePlatePhotoPath).catch();
+      let image = await this.utilService.readFile(plate.licensePlatePhotoPath);
+      this.utilService.deleteFile(plate.licensePlatePhotoPath).catch();
 
       const licensePlate = await licensePlateRepository.findOneByPlate(plate.licensePlate);
       if(licensePlate == null)
@@ -126,8 +143,8 @@ export class WorkflowService {
 
       // Bild auslesen & löschen
       this.loggerService.log('Exit-Workflow started.');
-      let image = await this.readFile(plate.licensePlatePhotoPath);
-      this.deleteFile(plate.licensePlatePhotoPath).catch();
+      let image = await this.utilService.readFile(plate.licensePlatePhotoPath);
+      this.utilService.deleteFile(plate.licensePlatePhotoPath).catch();
 
       const licensePlate = await licensePlateRepository.findOneByPlate(plate.licensePlate);
       if(licensePlate == null)
@@ -211,23 +228,5 @@ export class WorkflowService {
     // Schalte alle Parkleitsystem-lampen ab
     const devices = await this.deviceRepository.findBy({ type: { name: DeviceTypeName.PARKING_GUIDE_LAMP }});
     await Promise.all(devices.map(async it => await this.communicationService.sendInstruction(it.mac,false)));
-  }
-
-  private async deleteFile(path: string): Promise<void> {
-    return new Promise(async (resolve, reject) => {
-      unlink(path,(error) => {
-        if(error) reject(error);
-        else resolve();
-      });
-    });
-  }
-
-  private async readFile(path: string): Promise<Buffer> {
-    return new Promise(async (resolve, reject) => {
-      readFile(path,(error,data) => {
-        if(error) reject(error);
-        else resolve(data);
-      });
-    });
   }
 }
