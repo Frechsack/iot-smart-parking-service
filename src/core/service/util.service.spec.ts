@@ -15,4 +15,11 @@ describe('UtilService', () => {
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
+
+    test('price', () => {
+       
+
+
+        expect(service.calculatePrice(new Date(2020, 9, 6, 15, 10), new Date(2020, 9, 6, 15, 25))).toEqual(1);
+    })
 });

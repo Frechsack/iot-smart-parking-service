@@ -46,8 +46,20 @@ export class UtilService {
   }
 
   public async calculatePrice(from: Date, to: Date): Promise<number>{
-    const milis = to.getTime() - from.getTime();
-    return milis / 1000 * 0.00035;
+      const milis = to.getTime() - from.getTime();
+      const secs = milis / 1000;
+      const mins = secs / 60;
+      const remainder = mins % 60;
+      const hours = parseInt((mins / 60).toFixed(0));
+      let priceaddon;
+      if (remainder > 1) {
+          priceaddon = 1;
+
+      }else {
+          priceaddon = 0;
+          }
+      
+      return hours * 1 + priceaddon;
   }
 
   public async deleteFile(path: string): Promise<void> {
