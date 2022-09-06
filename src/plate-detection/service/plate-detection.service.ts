@@ -167,10 +167,15 @@ export class PlateDetectionService {
 
     const funProcessPossiblePlates = async () => {
 
-      // Prüfe zuerst ob Parkhaus noch Kapazitäten übrig hat.
-      // Wenn nicht darf Kennzeichen nicht erkannt werden.
-      const isParkingLotAvailable = await this.utilService.countAvailableParkingLots();
-      if(isParkingLotAvailable <= 0) return;
+      if(process === LicensePlatePhotoTypeName.ENTER){
+        // Prüfe zuerst ob Parkhaus noch Kapazitäten übrig hat.
+        // Wenn nicht darf Kennzeichen nicht erkannt werden.
+        const isParkingLotAvailable = await this.utilService.countAvailableParkingLots();
+        if(isParkingLotAvailable <= 0) {
+          this.loggerService.warn('Licenseplate detected, but no space available.');
+          return;
+        }
+      }
 
       // Nach erfolgreicher erkennung, muss die Erkennung für Zeit X deaktiviert werden.
       const latestDetection = this.latestDetectionMap.get(process);
@@ -183,6 +188,8 @@ export class PlateDetectionService {
 
         // Prüfe ob Kennzeichen in Datenbank
         if(!(await this.licensePlateRepository.existsByPlate(licensePlate.licensePlate))) continue;
+
+
         // Prüfe ob Zustand bereits bekannt
         const currentStatus = await this.licensePlateStatusRepository.findOneByPlate(licensePlate.licensePlate);
         if(currentStatus != null && currentStatus.status === process) continue;
@@ -208,7 +215,7 @@ export class PlateDetectionService {
           if(lastEnterLicensePlate == licensePlate.licensePlate)
             this.lastLicensePlateMap.set(oppositeProcess,'');
 
-          this.latestDetectionMap.set(process,new Date());
+          this.latestDetectionMap.set(process,new Date(Date.now()));
           this.detectedPlatesSource.next(new DetectedLicensePlate(licensePlate.licensePlate,snapshotPath,process));
         }
         catch (err){

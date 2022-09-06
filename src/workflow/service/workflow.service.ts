@@ -60,11 +60,21 @@ export class WorkflowService {
       if((await device.type).name !== DeviceTypeName.CWO_SENSOR) return;
       const status = it.status;
       const fans = await this.deviceRepository.findBy({ type: { name: DeviceTypeName.FAN }});
-
+      const alarms = await this.deviceRepository.findBy({ type : { name : DeviceTypeName.ALARM }});
+      const barriers =
+        [
+         ...(await this.deviceRepository.findBy({ type: { name: DeviceTypeName.EXIT_BARRIER}})),
+         ...(await this.deviceRepository.findBy({ type: { name: DeviceTypeName.ENTER_BARRIER}}))
+       ];
 
       // TODO: Test ob Co2 zu hoch
       fans.forEach(it => this.communicationService.sendInstruction(it.mac, true));
+      alarms.forEach(it => this.communicationService.sendInstruction(it.mac, true));
+      barriers.forEach(it => this.communicationService.sendInstruction(it.mac, true));
+
       fans.forEach(it => this.communicationService.sendInstruction(it.mac, false));
+      alarms.forEach(it => this.communicationService.sendInstruction(it.mac, false));
+      barriers.forEach(it => this.communicationService.sendInstruction(it.mac, false));
     });
 
     // Initial display initialisieren
