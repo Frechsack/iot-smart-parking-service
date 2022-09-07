@@ -123,6 +123,7 @@ export class AccountService {
     if((await licensePlate.account).email == email)
     {
       try {
+        // TODO: Transaction
         await this.licensePlateRepository.remove(licensePlate);
         this.loggerService.log(`Removed license-plate, email: "${email}", plate: "${plate}"`);
       }
