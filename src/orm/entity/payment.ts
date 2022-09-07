@@ -16,11 +16,11 @@ export class Payment {
 
   @ManyToOne(() => Account, it => it.payments, { nullable: false, createForeignKeyConstraints: false })
   @JoinColumn({ name: 'account_email' })
-  public account: Promise<Account>;
+  public account: Promise<Account | null>;
 
   @ManyToOne(() => LicensePlate, it => it.payments, { nullable: false, createForeignKeyConstraints: false })
   @JoinColumn({ name: 'license_plate_plate' })
-  public licensePlate: Promise<LicensePlate>;
+  public licensePlate: Promise<LicensePlate | null>;
 
   @Column({ primary: true, name: 'account_email' })
   private accountKey: string;

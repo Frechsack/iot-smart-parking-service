@@ -184,7 +184,7 @@ export class WorkflowService {
       payment.account = Promise.resolve(await licensePlate.account);
       payment.price = await this.utilService.calculatePrice(payment.from,payment.to);
       await paymentRepository.save(payment);
-      this.loggerService.log(`Created payment, plate: "${licensePlate.plate}", email: "${(await payment.account).email}", price: "${payment.price}", to: "${payment.to}", from: "${payment.from}"`);
+      this.loggerService.log(`Created payment, plate: "${licensePlate.plate}", email: "${(await licensePlate.account).email}", price: "${payment.price}", to: "${payment.to}", from: "${payment.from}"`);
 
       // Update Displays
       this.synchronizeSpaceDisplays();

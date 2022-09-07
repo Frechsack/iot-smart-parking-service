@@ -3,9 +3,12 @@ import { PaginationDto } from 'src/core/dto/pagination-dto';
 import { LoggerService } from 'src/core/service/logger.service';
 import { Account } from 'src/orm/entity/account';
 import { LicensePlate } from 'src/orm/entity/license-plate';
+import { LicensePlatePhotoTypeName } from 'src/orm/entity/license-plate-photo-type';
 import { AccountRepository } from 'src/orm/repository/account.repository';
+import { LicensePlatePhotoRepository } from 'src/orm/repository/license-plate-photo.repository';
 import { LicensePlateRepository } from 'src/orm/repository/license-plate.repository';
 import { PaymentRepository } from 'src/orm/repository/payment.repository';
+import { EntityManager } from 'typeorm';
 import { AccountDto } from '../dto/account-dto';
 import { PaymentDto } from '../dto/payment-dto';
 import { JwtService } from './jwt.service';
@@ -18,7 +21,8 @@ export class AccountService {
     private readonly licensePlateRepository: LicensePlateRepository,
     private readonly loggerService: LoggerService,
     private readonly paymentRepository: PaymentRepository,
-    private readonly jwtService: JwtService
+    private readonly jwtService: JwtService,
+    private readonly licensePlatePhotoRepository: LicensePlatePhotoRepository
 
   ) {
       this.loggerService.context = AccountService.name;
@@ -120,19 +124,29 @@ export class AccountService {
     if(licensePlate == null)
       return;
 
-    if((await licensePlate.account).email == email)
-    {
-      try {
-        // TODO: Transaction
-        await this.licensePlateRepository.remove(licensePlate);
-        this.loggerService.log(`Removed license-plate, email: "${email}", plate: "${plate}"`);
-      }
-      catch( error) {
-        this.loggerService.error(`Failed remove of license-plate, email: "${email}", plate: "${plate}", error: "${error}"`);
-      }
-    }
-    else{
+    if((await licensePlate.account).email != email)
       return Promise.reject(new HttpException('License-plate registered for different used', 401));
+
+    // Prüfen ob Auto in Parkhaus
+    const latestPhoto = await this.licensePlatePhotoRepository.findLatestByPlate(licensePlate.plate);
+    if(latestPhoto != null)
+      if((await latestPhoto.type).name === LicensePlatePhotoTypeName.ENTER)
+        return Promise.reject(new HttpException('Plate is currently within the parkhouse.',404));
+
+    const transaction = async (manager: EntityManager) => {
+      const licensePlateRepository = this.licensePlateRepository.forTransaction(manager);
+      const licensePlatePhotoRepository = this.licensePlatePhotoRepository.forTransaction(manager);
+      await licensePlatePhotoRepository.remove(await licensePlatePhotoRepository.findBy({ licensePlate: { plate: plate }}));
+      await licensePlateRepository.delete(plate);
+    }
+
+    try {
+      await this.licensePlateRepository.runTransaction(transaction);
+      this.loggerService.log(`Removed license-plate, email: "${email}", plate: "${plate}"`);
+    }
+    catch (error) {
+      this.loggerService.error(`Failed remove of license-plate, email: "${email}", plate: "${plate}", error: "${error}"`);
+      return Promise.reject(new HttpException('License-plate could not be removed', 403));
     }
   }
 

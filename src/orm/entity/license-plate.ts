@@ -1,4 +1,4 @@
-import { Entity, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn, OneToMany, DeleteDateColumn } from 'typeorm';
 import { Account } from './account';
 import { LicensePlatePhoto } from './license-plate-photo';
 import { Payment } from './payment';

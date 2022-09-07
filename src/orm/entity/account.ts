@@ -1,4 +1,4 @@
-import { Entity, Column, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, OneToMany, ManyToOne, JoinColumn, DeleteDateColumn } from 'typeorm';
 import { AuthenticationToken } from './authentication-token';
 import { LicensePlate } from './license-plate';
 import { Payment } from './payment';

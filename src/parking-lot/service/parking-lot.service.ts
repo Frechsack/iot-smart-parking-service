@@ -18,8 +18,7 @@ export class ParkingLotService {
     const parkingLots = await this.parkingLotStatusRepository.findAndCount({ order: { nr: 'DESC' }});
     return new PaginationDto(parkingLots[1], parkingLots[0].map(it => new ParkingLotDto(it.nr,it.status == null
       ? true
-      : it.status.toLowerCase() === 'true'
-        ? false: true
+      : it.status.toLowerCase() === 'false'
       )
     ));
   }
