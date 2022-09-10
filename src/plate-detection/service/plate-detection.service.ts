@@ -80,7 +80,7 @@ export class PlateDetectionService {
       else {
         if(!this.childProcessMap.has(process)) return false;
         const childProcess = this.childProcessMap.get(process)!;
-        console.log("IsRunning: " + childProcess.exitCode != null || !childProcess.killed);
+        //console.log("IsRunning: " + childProcess.exitCode != null || !childProcess.killed);
         return childProcess.exitCode != null || !childProcess.killed;
       }
     }
@@ -285,7 +285,7 @@ export class PlateDetectionService {
         }
         else {
           this.modIgnoreError(process,1);
-          this.childProcessMap.get(process)!.kill();
+          this.childProcessMap.get(process)!.kill("SIGINT");
           resolve();
         }
       });
