@@ -285,6 +285,8 @@ export class PlateDetectionService {
         }
         else {
           this.modIgnoreError(p,1);
+
+          console.log(this.childProcessMap.get(p)!.pid);
           exec(`kill ${this.childProcessMap.get(p)!.pid!}`);
 
           resolve();
