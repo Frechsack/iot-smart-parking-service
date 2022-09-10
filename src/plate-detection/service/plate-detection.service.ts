@@ -168,6 +168,11 @@ export class PlateDetectionService {
 
     const funProcessPossiblePlates = async () => {
 
+      // Nach erfolgreicher erkennung, muss die Erkennung für Zeit X deaktiviert werden.
+      const latestDetection = this.latestDetectionMap.get(process);
+      if(latestDetection !== undefined && (latestDetection.getTime() >= Date.now() - DETECTION_TIMEOUT_SECONDS * 1000))
+        return;
+
       if(process === LicensePlatePhotoTypeName.ENTER){
         // Prüfe zuerst ob Parkhaus noch Kapazitäten übrig hat.
         // Wenn nicht darf Kennzeichen nicht erkannt werden.
@@ -177,11 +182,6 @@ export class PlateDetectionService {
           return;
         }
       }
-
-      // Nach erfolgreicher erkennung, muss die Erkennung für Zeit X deaktiviert werden.
-      const latestDetection = this.latestDetectionMap.get(process);
-      if(latestDetection !== undefined && (latestDetection.getTime() >= Date.now() - DETECTION_TIMEOUT_SECONDS * 1000))
-        return;
 
       for(const licensePlate of plates){
         // Doppelregistrieung verhindern --> Zwischenspeichern in Map.
@@ -296,9 +296,9 @@ export class PlateDetectionService {
         else {
         //  this.modIgnoreError(p,1);
         console.log(this.childProcessMap.get(p)!.pid!);
-          this.childProcessMap.get(p)!.kill();
+          //this.childProcessMap.get(p)!.kill();
           this.childProcessMap.get(p)!.kill('SIGINT');
-          process.kill(-this.childProcessMap.get(p)!.pid!);
+          //process.kill(-this.childProcessMap.get(p)!.pid!);
           resolve();
         }
       });
