@@ -317,6 +317,7 @@ export class PlateDetectionService {
           while(await existsFile(filePath))
           exec(`fswebcam 1 -d ${videoDevice} -s 2 --png 1 -q ${filePath}`,(error) => {
             if(error) {
+              this.loggerService.error('Execute of fswebcam failed, check if the program is installed.');
               reject(error);
             }else {
               resolove(filePath);

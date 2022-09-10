@@ -102,7 +102,14 @@ export class WorkflowService {
 
       // Bild auslesen & löschen
       this.loggerService.log('Enter-Workflow started.');
-      let image = await this.utilService.readFile(plate.licensePlatePhotoPath);
+      let image: Buffer;
+      try {
+        image = await this.utilService.readFile(plate.licensePlatePhotoPath);
+      }
+      catch (error){
+        this.loggerService.error(`File could not be read, error: "${error}"`);
+      }
+
       this.utilService.deleteFile(plate.licensePlatePhotoPath).catch();
 
       const licensePlate = await licensePlateRepository.findOneByPlate(plate.licensePlate);
@@ -112,7 +119,7 @@ export class WorkflowService {
       // Speicher Bild in DB --> Dadurch wird Kennzeichen als eingecheckt makiert.
       let licensePlatePhoto = new LicensePlatePhoto();
       licensePlatePhoto.date = new Date();
-      licensePlatePhoto.image = image;
+      licensePlatePhoto.image = image!;
       licensePlatePhoto.licensePlate = Promise.resolve(licensePlate);
       licensePlatePhoto.type = Promise.resolve((await licensePlatePhotoTypeRepository.findOneByName(LicensePlatePhotoTypeName.ENTER))!);
       licensePlatePhoto = await this.licensePlatePhotoRepository.save(licensePlatePhoto);
