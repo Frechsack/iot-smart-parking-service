@@ -285,10 +285,8 @@ export class PlateDetectionService {
         }
         else {
           this.modIgnoreError(p,1);
-          if(!this.childProcessMap.get(p)!.kill("SIGINT")){
-            console.log('Failed by SIGINT');
-            process.kill(this.childProcessMap.get(p)!.pid!);
-          }
+          exec(`kill ${this.childProcessMap.get(p)!.pid!}`);
+
           resolve();
         }
       });
