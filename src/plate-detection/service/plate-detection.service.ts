@@ -315,7 +315,10 @@ export class PlateDetectionService {
           do
             filePath = snapshotDir + (Math.random() * 100).toFixed(0) + '.png';
           while(await existsFile(filePath))
-          exec(`fswebcam 1 -d ${videoDevice} -s 2 --png 1 -q ${filePath}`,(error) => {
+
+          exec(`fswebcam -d ${videoDevice} --png 1 -q ${filePath}`,(error, stdout, stderr) => {
+            console.log("Out: " + stdout);
+            console.log("Err: " + stderr);
             if(error) {
               this.loggerService.error('Execute of fswebcam failed, check if the program is installed.');
               reject(error);
