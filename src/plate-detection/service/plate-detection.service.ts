@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Subject } from 'rxjs';
 import { DetectedLicensePlate } from '../detected-license-plate';
-import { exec, ChildProcess } from 'child_process';
+import { exec, spawn, ChildProcess } from 'child_process';
 import { LicensePlatePhotoTypeName, valueOf } from 'src/orm/entity/license-plate-photo-type';
 import { ConfigService } from '@nestjs/config';
 import { LoggerService } from 'src/core/service/logger.service';
@@ -250,7 +250,8 @@ export class PlateDetectionService {
           await this.stopPlateRecognition(process);
 
       // Starte Prozess
-      const childProcess = exec(command,async error => {
+      const childProcess =  spawn(command, { shell: true });
+      /*exec(command,async error => {
         // Der Prozess wurde fehlerhaft beendet
         if(error) {
           if(this.modIgnoreError(process,0) < 0){
@@ -260,11 +261,13 @@ export class PlateDetectionService {
           else
             this.modIgnoreError(process,-1);
         }
-      });
+      });*/
 
       this.childProcessMap.set(process,childProcess);
 
       childProcess.stdout!.on('data', async data => {
+        if(data == null) return;
+        data = data.toString();
         const plates = this.extractPossiblePlates(data);
         await this.processPossiblePlates(process,plates);
       });
@@ -276,7 +279,7 @@ export class PlateDetectionService {
     const funStopPlateRecognition = async () => {
       return new Promise<void>(async (resolve, reject) => {
         if(this.isDockerUsed()){
-          this.modIgnoreError(p,1);
+        //  this.modIgnoreError(p,1);
           exec(`sudo docker container stop $(sudo docker container ls -q --filter name=${this.getDockerContrainerName(p)})`,() => {
             exec(`sudo docker container rm $(sudo docker container ls -q --filter name=${this.getDockerContrainerName(p)})`, () => {
               resolve();
@@ -284,11 +287,8 @@ export class PlateDetectionService {
           });
         }
         else {
-          this.modIgnoreError(p,1);
-
-          console.log(this.childProcessMap.get(p)!.pid);
-          exec(`kill ${this.childProcessMap.get(p)!.pid!}`);
-
+        //  this.modIgnoreError(p,1);
+          this.childProcessMap.get(p)!.kill();
           resolve();
         }
       });
