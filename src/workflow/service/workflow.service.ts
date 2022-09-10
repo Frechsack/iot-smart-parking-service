@@ -132,14 +132,13 @@ export class WorkflowService {
       const parkingLotGuideDevice = await this.parkingLotGuidingDevicesRepository.findOneByNr(parkingLotStatus.nr);
       if(parkingLotGuideDevice == null){
         this.loggerService.warn(`No parking-guide installed, parking-lot: "${parkingLotStatus.nr}"`);
-        return;
       }
-
-      this.loggerService.log(`Enable parking-guide-system, parking-lot: "${parkingLotStatus.nr}"`)
-
-      // Gebe Anweisung Geräte einzuschalten
-      this.enableParkingGuideSystem([ parkingLotGuideDevice.mac, ...parkingLotGuideDevice.parents ]);
-
+      else{
+        this.loggerService.log(`Enable parking-guide-system, parking-lot: "${parkingLotStatus.nr}"`)
+        // Gebe Anweisung Geräte einzuschalten
+        this.enableParkingGuideSystem([ parkingLotGuideDevice.mac, ...parkingLotGuideDevice.parents ]);
+      }
+      
       // Schalte Einfahrschranken
       const enterServos = await deviceRepository.findBy({ type: { name: DeviceTypeName.ENTER_BARRIER }});
       enterServos.forEach(it => this.utilService.openServoForInterval(it.mac));
