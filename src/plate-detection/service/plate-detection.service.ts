@@ -60,7 +60,7 @@ export class PlateDetectionService {
       }
     }
     // Starte Erkennung für alle.
-    this.videoDevicesMap.forEach((value, key) => this.startPlateRecognition(key));
+    this.videoDevicesMap.forEach((_value, key) => this.startPlateRecognition(key));
   }
 
   private async isProcessRunning(process: LicensePlatePhotoTypeName): Promise<boolean> {
@@ -196,7 +196,7 @@ export class PlateDetectionService {
 
         try {
           // Mache Snapshot
-          const snapshotPath = await this.takeSnapshot(process,VIDEO_DEVICE);
+          const snapshotPath = await this.takeSnapshot(VIDEO_DEVICE);
 
           this.lastLicensePlateMap.set(process,licensePlate.licensePlate);
 
@@ -230,11 +230,6 @@ export class PlateDetectionService {
     // Das Gerät für diesen Prozess
     const videoDevice = this.videoDevicesMap.get(process)!;
 
-    // Das Kommando um openalpr zu starten, je nach Konfiguration per Docker oder native.
-    const command = this.isDockerUsed() ?
-      `sudo docker run -t --rm --privileged --name ${this.getDockerContrainerName(process)} openalpr -n 2 -d -c eu ${videoDevice}` :
-      `alpr -n 2 -d --motion -c eu ${videoDevice}`;
-
     // Funktion zum starten des Prozesses.
     const funStartPlateRecognition = async (): Promise<void> => {
       // Beende sollte Kennzeichenerkennung bereits laufen
@@ -244,30 +239,23 @@ export class PlateDetectionService {
       // Starte Prozess
       let childProcess: ChildProcess
       if(this.isDockerUsed()){
-          childProcess = spawn(command, { shell: true });
+          childProcess = spawn(
+            `sudo docker run -t --rm --privileged --name ${this.getDockerContrainerName(process)} openalpr -n 2 -d -c eu ${videoDevice}`
+            , { shell: true }
+          );
       }
       else {
-        childProcess = spawn(command, { shell: true, detached: true });
+        childProcess = spawn(
+          `alpr -n 2 -d --motion -c eu ${videoDevice}`,
+          { shell: true, detached: true }
+        );
       }
-
-      /*exec(command,async error => {
-        // Der Prozess wurde fehlerhaft beendet
-        if(error) {
-          if(this.modIgnoreError(process,0) < 0){
-            this.loggerService.error(`Licenseplate recognition failed, type: "${process}", error: "${error}"`);
-            this.modIgnoreError(process,-this.modIgnoreError(process,0));
-          }
-          else
-            this.modIgnoreError(process,-1);
-        }
-      });*/
 
       this.childProcessMap.set(process,childProcess);
 
       childProcess.stdout!.on('data', async data => {
         if(data == null) return;
-        data = data.toString();
-        const plates = this.extractPossiblePlates(data);
+        const plates = this.extractPossiblePlates(data.toString());
         await this.processPossiblePlates(process,plates);
       });
     }
@@ -276,7 +264,7 @@ export class PlateDetectionService {
 
   private async stopPlateRecognition(p: LicensePlatePhotoTypeName): Promise<void> {
     const funStopPlateRecognition = async () => {
-      return new Promise<void>(async (resolve, reject) => {
+      return new Promise<void>(async (resolve) => {
         if(this.isDockerUsed()){
           exec(`sudo docker container stop $(sudo docker container ls -q --filter name=${this.getDockerContrainerName(p)})`,() => {
             exec(`sudo docker container rm $(sudo docker container ls -q --filter name=${this.getDockerContrainerName(p)})`, () => {
@@ -298,7 +286,7 @@ export class PlateDetectionService {
   }
 
 
-  private async takeSnapshot(process: LicensePlatePhotoTypeName,videoDevice: string): Promise<string> {
+  private async takeSnapshot(videoDevice: string): Promise<string> {
     const FAILED_ATTEMPTS_MAX = 10;
     const TIMEOUT_PER_FAIL = 250;
 
@@ -322,7 +310,7 @@ export class PlateDetectionService {
             filePath = snapshotDir + (Math.random() * 100).toFixed(0) + '.png';
           while(await existsFile(filePath))
 
-          exec(`fswebcam -d ${videoDevice} --png 1 -q ${filePath}`,(error, stdout, stderr) => {
+          exec(`fswebcam -d ${videoDevice} --png 1 -q ${filePath}`,(error, _stdout, stderr) => {
             if(error !== null || stderr !== '') {
               reject(error);
             }
