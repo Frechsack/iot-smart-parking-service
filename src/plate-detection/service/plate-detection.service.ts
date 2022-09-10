@@ -80,7 +80,7 @@ export class PlateDetectionService {
       else {
         if(!this.childProcessMap.has(process)) return false;
         const childProcess = this.childProcessMap.get(process)!;
-        console.log(childProcess.exitCode != null || !childProcess.killed);
+        console.log(childProcess.exitCode == null && !childProcess.killed);
         console.log(childProcess.pid);
         return childProcess.exitCode == null && !childProcess.killed;
       }
