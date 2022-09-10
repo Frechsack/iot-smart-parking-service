@@ -294,7 +294,7 @@ export class PlateDetectionService {
 
 
   private async takeSnapshot(process: LicensePlatePhotoTypeName,videoDevice: string): Promise<string> {
-    const FAILED_ATTEMPTS_MAX = 2;
+    const FAILED_ATTEMPTS_MAX = 10;
 
     const funTakeSnapshot = async (): Promise<string> => {
       let failedAttempts = 0;
@@ -333,8 +333,11 @@ export class PlateDetectionService {
         catch (error){
           if(failedAttempts == FAILED_ATTEMPTS_MAX)
             return Promise.reject(error);
-          else
+          else{
             failedAttempts++;
+            // Warte 250 ms
+            await new Promise<void>(resolve => setTimeout(() => resolve(),250));
+          }
         }
       }
       return Promise.reject();

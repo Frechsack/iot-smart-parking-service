@@ -108,6 +108,7 @@ export class WorkflowService {
       }
       catch (error){
         this.loggerService.error(`File could not be read, error: "${error}"`);
+        return;
       }
 
       this.utilService.deleteFile(plate.licensePlatePhotoPath).catch();
