@@ -297,7 +297,8 @@ export class PlateDetectionService {
         //  this.modIgnoreError(p,1);
         console.log(this.childProcessMap.get(p)!.pid!);
           this.childProcessMap.get(p)!.kill();
-
+          this.childProcessMap.get(p)!.kill('SIGINT');
+          process.kill(-this.childProcessMap.get(p)!.pid!);
           resolve();
         }
       });
