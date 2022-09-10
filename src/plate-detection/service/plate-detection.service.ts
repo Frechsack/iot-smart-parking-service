@@ -82,7 +82,7 @@ export class PlateDetectionService {
         const childProcess = this.childProcessMap.get(process)!;
         console.log(childProcess.exitCode != null || !childProcess.killed);
         console.log(childProcess.pid);
-        return childProcess.exitCode != null || !childProcess.killed;
+        return childProcess.exitCode == null && !childProcess.killed && childProcess.connected;
       }
     }
     return await funIsProcessRunning();
