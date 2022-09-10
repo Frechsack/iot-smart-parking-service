@@ -319,7 +319,7 @@ export class PlateDetectionService {
           exec(`fswebcam -d ${videoDevice} --png 1 -q ${filePath}`,(error, stdout, stderr) => {
             console.log("Out: " + stdout);
             console.log("Err: " + stderr);
-            if(error) {
+            if(error !== null || stderr !== '') {
               this.loggerService.error('Execute of fswebcam failed, check if the program is installed.');
               reject(error);
             }else {
