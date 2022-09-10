@@ -272,25 +272,28 @@ export class PlateDetectionService {
     await this.mutexMap.get(process)!.get('startProcess')!.runExclusive(funStartPlateRecognition);
   }
 
-  private async stopPlateRecognition(process: LicensePlatePhotoTypeName): Promise<void> {
+  private async stopPlateRecognition(p: LicensePlatePhotoTypeName): Promise<void> {
     const funStopPlateRecognition = async () => {
       return new Promise<void>(async (resolve, reject) => {
         if(this.isDockerUsed()){
-          this.modIgnoreError(process,1);
-          exec(`sudo docker container stop $(sudo docker container ls -q --filter name=${this.getDockerContrainerName(process)})`,() => {
-            exec(`sudo docker container rm $(sudo docker container ls -q --filter name=${this.getDockerContrainerName(process)})`, () => {
+          this.modIgnoreError(p,1);
+          exec(`sudo docker container stop $(sudo docker container ls -q --filter name=${this.getDockerContrainerName(p)})`,() => {
+            exec(`sudo docker container rm $(sudo docker container ls -q --filter name=${this.getDockerContrainerName(p)})`, () => {
               resolve();
             })
           });
         }
         else {
-          this.modIgnoreError(process,1);
-          this.childProcessMap.get(process)!.kill("SIGINT");
+          this.modIgnoreError(p,1);
+          if(!this.childProcessMap.get(p)!.kill("SIGINT")){
+            console.log('Failed by SIGINT');
+            process.kill(this.childProcessMap.get(p)!.pid!);
+          }
           resolve();
         }
       });
     }
-    await this.mutexMap.get(process)!.get('stopProcess')?.runExclusive(funStopPlateRecognition);
+    await this.mutexMap.get(p)!.get('stopProcess')?.runExclusive(funStopPlateRecognition);
   }
 
 
