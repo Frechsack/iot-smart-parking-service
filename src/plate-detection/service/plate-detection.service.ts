@@ -250,7 +250,14 @@ export class PlateDetectionService {
           await this.stopPlateRecognition(process);
 
       // Starte Prozess
-      const childProcess =  spawn(command, { shell: true });
+      let childProcess: ChildProcess
+      if(this.isDockerUsed()){
+          childProcess = spawn(command, { shell: true });
+      }
+      else {
+        childProcess = spawn(command, { shell: false });
+      }
+
       /*exec(command,async error => {
         // Der Prozess wurde fehlerhaft beendet
         if(error) {
