@@ -313,7 +313,7 @@ export class PlateDetectionService {
           const snapshotDir = this.getSnapshotDirectory();
           let filePath: string;
           do
-            filePath = snapshotDir + Math.random() + '.png';
+            filePath = snapshotDir + (Math.random() * 100).toFixed(0) + '.png';
           while(await existsFile(filePath))
           exec(`fswebcam 1 -d ${videoDevice} -s 2 --png 1 -q ${filePath}`,(error) => {
             if(error) {
