@@ -255,7 +255,7 @@ export class PlateDetectionService {
           childProcess = spawn(command, { shell: true });
       }
       else {
-        childProcess = spawn(command, { shell: false });
+        childProcess = spawn(command, { shell: true, detached: true });
       }
 
       /*exec(command,async error => {
