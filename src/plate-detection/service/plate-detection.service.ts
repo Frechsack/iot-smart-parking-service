@@ -11,7 +11,7 @@ const fs = require('fs').promises
 import { Mutex } from 'async-mutex';
 import { UtilService } from 'src/core/service/util.service';
 
-const DETECTION_TIMEOUT_SECONDS = 20;
+const DETECTION_TIMEOUT_SECONDS = 10;
 
 @Injectable()
 export class PlateDetectionService {
@@ -177,6 +177,7 @@ export class PlateDetectionService {
         // Wenn nicht darf Kennzeichen nicht erkannt werden.
         const isParkingLotAvailable = await this.utilService.countAvailableParkingLots();
         if(isParkingLotAvailable <= 0) {
+          this.latestDetectionMap.set(process,new Date(Date.now()));
           this.loggerService.warn('Licenseplate detected, but no space available.');
           return;
         }
@@ -294,10 +295,7 @@ export class PlateDetectionService {
         }
         else {
         //  this.modIgnoreError(p,1);
-        console.log(this.childProcessMap.get(p)!.pid!);
-          //this.childProcessMap.get(p)!.kill();
-          this.childProcessMap.get(p)!.kill('SIGINT');
-          //process.kill(-this.childProcessMap.get(p)!.pid!);
+          process.kill(-this.childProcessMap.get(p)!.pid!);
           resolve();
         }
       });
@@ -355,7 +353,7 @@ export class PlateDetectionService {
             failedAttempts++;
             this.loggerService.warn(`Execute of fswebcam failed, next try in "${TIMEOUT_PER_FAIL} ms".`);
             // Warte 250 ms
-            await new Promise<void>(resolve => setTimeout(() => resolve(),250));
+            await new Promise<void>(resolve => setTimeout(() => resolve(),TIMEOUT_PER_FAIL));
           }
         }
       }
