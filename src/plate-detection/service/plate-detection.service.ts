@@ -241,7 +241,7 @@ export class PlateDetectionService {
     // Das Kommando um openalpr zu starten, je nach Konfiguration per Docker oder native.
     const command = this.isDockerUsed() ?
       `sudo docker run -t --rm --privileged --name ${this.getDockerContrainerName(process)} openalpr -n 2 -d -c eu ${videoDevice}` :
-      `alpr -n 2 -d -c eu ${videoDevice}`;
+      `alpr -n 2 -d --motion -c eu ${videoDevice}`;
 
     // Funktion zum starten des Prozesses.
     const funStartPlateRecognition = async (): Promise<void> => {
