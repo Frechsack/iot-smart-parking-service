@@ -295,7 +295,9 @@ export class PlateDetectionService {
         }
         else {
         //  this.modIgnoreError(p,1);
+        console.log(this.childProcessMap.get(p)!.pid!);
           this.childProcessMap.get(p)!.kill();
+
           resolve();
         }
       });
