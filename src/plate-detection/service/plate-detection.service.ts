@@ -34,8 +34,6 @@ export class PlateDetectionService {
 
   private readonly mutexMap = new Map<LicensePlatePhotoTypeName,Map<string, Mutex>>();
 
-  private readonly ignoreErrorMap = new Map<LicensePlatePhotoTypeName,number>();
-
   private readonly latestDetectionMap = new Map<LicensePlatePhotoTypeName,Date>();
 
   constructor(
@@ -55,7 +53,6 @@ export class PlateDetectionService {
         functionMap.set('processPossiblePlates', new Mutex());
 
         this.mutexMap.set(valueOf(processType), functionMap);
-        this.ignoreErrorMap.set(valueOf(processType), 0);
         this.videoDevicesMap.set(valueOf(processType),videoDevice);
       }
       else {
@@ -69,6 +66,7 @@ export class PlateDetectionService {
   private async isProcessRunning(process: LicensePlatePhotoTypeName): Promise<boolean> {
     const funIsProcessRunning = async (): Promise<boolean> => {
       if(this.isDockerUsed()){
+        // Die Erkennung ob der Prozess läuft, muss über Docker geschehen.
         return new Promise<boolean>((resolve) => {
           exec(`sudo docker container ls -q --filter name=${this.getDockerContrainerName(process)}`, (error,stdout) => {
             if(error) resolve(false);
@@ -78,6 +76,7 @@ export class PlateDetectionService {
         });
       }
       else {
+        // Die Erkennung ob der Prozess läuft, erfolgt primär darüber ob der Prozess in ChildMap ist.
         if(!this.childProcessMap.has(process)) return false;
         const childProcess = this.childProcessMap.get(process)!;
         console.log(childProcess.exitCode == null && !childProcess.killed);
@@ -86,13 +85,6 @@ export class PlateDetectionService {
       }
     }
     return await funIsProcessRunning();
-  }
-
-  private modIgnoreError(process: LicensePlatePhotoTypeName, mod: number): number{
-    if(mod === 0) return this.ignoreErrorMap.get(process)!;
-    mod = this.ignoreErrorMap.get(process)!; + mod;
-    this.ignoreErrorMap.set(process, mod);
-    return mod;
   }
 
   public isDockerUsed(): boolean {
@@ -288,16 +280,18 @@ export class PlateDetectionService {
     const funStopPlateRecognition = async () => {
       return new Promise<void>(async (resolve, reject) => {
         if(this.isDockerUsed()){
-        //  this.modIgnoreError(p,1);
           exec(`sudo docker container stop $(sudo docker container ls -q --filter name=${this.getDockerContrainerName(p)})`,() => {
             exec(`sudo docker container rm $(sudo docker container ls -q --filter name=${this.getDockerContrainerName(p)})`, () => {
+              // Entferne den garantiert gestoppten Prozess aus ChildMap
+              this.childProcessMap.delete(p);
               resolve();
             })
           });
         }
         else {
-        //  this.modIgnoreError(p,1);
           process.kill(-this.childProcessMap.get(p)!.pid!);
+          // Entferne den garantiert gestoppten Prozess aus ChildMap
+          this.childProcessMap.delete(p);
           resolve();
         }
       });
