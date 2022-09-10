@@ -295,6 +295,7 @@ export class PlateDetectionService {
 
   private async takeSnapshot(process: LicensePlatePhotoTypeName,videoDevice: string): Promise<string> {
     const FAILED_ATTEMPTS_MAX = 10;
+    const TIMEOUT_PER_FAIL = 250;
 
     const funTakeSnapshot = async (): Promise<string> => {
       let failedAttempts = 0;
@@ -317,12 +318,10 @@ export class PlateDetectionService {
           while(await existsFile(filePath))
 
           exec(`fswebcam -d ${videoDevice} --png 1 -q ${filePath}`,(error, stdout, stderr) => {
-            console.log("Out: " + stdout);
-            console.log("Err: " + stderr);
             if(error !== null || stderr !== '') {
-              this.loggerService.error('Execute of fswebcam failed, check if the program is installed.');
               reject(error);
-            }else {
+            }
+            else {
               resolove(filePath);
             }
           });
@@ -335,9 +334,13 @@ export class PlateDetectionService {
         }
         catch (error){
           if(failedAttempts == FAILED_ATTEMPTS_MAX)
+          {
+            this.loggerService.error('Execute of fswebcam failed.');
             return Promise.reject(error);
+          }
           else{
             failedAttempts++;
+            this.loggerService.warn(`Execute of fswebcam failed, next try in "${TIMEOUT_PER_FAIL} ms".`);
             // Warte 250 ms
             await new Promise<void>(resolve => setTimeout(() => resolve(),250));
           }
