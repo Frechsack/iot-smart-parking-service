@@ -21,7 +21,12 @@ export class UtilService {
   }
 
 
-
+  /**
+  * Öffnet einen Servo für ein interval. Dazu wird sofort die Anweisung "true" an das Gerät gesendet.
+  * Nach dem Interval die Anweisung "false", sollte der Servo zwischenzeitlich nicht erneut durch diese Funktion geöffnet worden sein.
+  * @param mac Das zu öffnende Gerät.
+  * @param intervalInSeconds Das Interval, für welches das Gerät geöffnet bleiben soll.
+  */
   public async openServoForInterval(mac: string, intervalInSeconds = 15): Promise<void> {
     const funCloseServo = async (mac: string, closeAt: Date) => {
       const latestServoStatus = this.latestServoStatusMap.get(mac);
@@ -36,6 +41,9 @@ export class UtilService {
     setTimeout(async () => funCloseServo(mac,closeAt),interval);
   }
 
+  /**
+  * Gibt die Anzahl an verfügbaren, nicht belegten Parkplätzen zurück.
+  */
   public async countAvailableParkingLots(){
       const parkingLots = await this.parkingLotRepository.count();
       const licensePlatesInUse = await this.licensePlateStatusRepository.count({ where: { status: LicensePlatePhotoTypeName.ENTER }});
@@ -47,10 +55,10 @@ export class UtilService {
 
 
     /**
-     * Preis calculation, jede Angefangene Stunde 1�
-     * @param from Einfuhrdatum in das Parkhaus 
+     * Preis calculation, jede Angefangene Stunde 1�
+     * @param from Einfuhrdatum in das Parkhaus
      * @param to Ausfuhrdatum aus dem Parkhaus
-     * @returns Preis f�r das Parken
+     * @returns Preis f�r das Parken
      */
   public async calculatePrice(from: Date, to: Date): Promise<number>{
       const milis = to.getTime() - from.getTime();
@@ -65,7 +73,7 @@ export class UtilService {
       }else {
           priceaddon = 0;
           }
-      
+
       return hours * 1 + priceaddon;
   }
 

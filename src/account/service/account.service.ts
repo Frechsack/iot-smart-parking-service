@@ -66,6 +66,12 @@ export class AccountService {
         }
     }
 
+    /**
+    * Erstellt ein Autentifizierungstoken für einen Account.
+    * @param email Die Email des Accounts.
+    * @param password Das Password des Accounts.
+    * @returns Gibt ein JWT-Token zurück.
+    */
     public async authenticate(email: string, password: string): Promise<string> {
         let account = await this.accountRepository.findOneByEmail(email);
         if (account == null) {

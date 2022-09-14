@@ -19,13 +19,17 @@ import { Payment } from 'src/orm/entity/payment';
 import { AccountRepository } from 'src/orm/repository/account.repository';
 import { PaymentRepository } from 'src/orm/repository/payment.repository';
 import { filter } from 'rxjs';
+import { StatusMessage } from 'src/core/messages/status-message';
 
 const PARKING_GUIDE_SYSTEM_RUNTIME_SECONDS = 30;
+const CWO_SENSOR_THRESHOLD = 2;
+const CLIMATE_WORKFLOW_RUNTIME_SECONDS = 20;
 
 @Injectable()
 export class WorkflowService {
 
   private latestEnterWorkflowStart?: Date;
+  private latestClimateWorkflowStart?: Date;
 
   constructor(
     private readonly communicationService: CommunicationService,
@@ -55,30 +59,53 @@ export class WorkflowService {
     this.communicationService.statusLane
     .pipe(filter(it => it.isExternalMessage()))
     .subscribe(async it => {
+      // Prüfe ob Status von einem co2 Sensor kam.
       const device = await this.deviceRepository.findOneByMac(it.mac);
       if(device == null) return;
       if((await device.type).name !== DeviceTypeName.CWO_SENSOR) return;
-      const status = it.status;
-      const fans = await this.deviceRepository.findBy({ type: { name: DeviceTypeName.FAN }});
-      const alarms = await this.deviceRepository.findBy({ type : { name : DeviceTypeName.ALARM }});
-      const barriers =
-        [
-         ...(await this.deviceRepository.findBy({ type: { name: DeviceTypeName.EXIT_BARRIER}})),
-         ...(await this.deviceRepository.findBy({ type: { name: DeviceTypeName.ENTER_BARRIER}}))
-       ];
-
-      // TODO: Test ob Co2 zu hoch
-      fans.forEach(it => this.communicationService.sendInstruction(it.mac, true));
-      alarms.forEach(it => this.communicationService.sendInstruction(it.mac, true));
-      barriers.forEach(it => this.communicationService.sendInstruction(it.mac, true));
-
-      fans.forEach(it => this.communicationService.sendInstruction(it.mac, false));
-      alarms.forEach(it => this.communicationService.sendInstruction(it.mac, false));
-      barriers.forEach(it => this.communicationService.sendInstruction(it.mac, false));
+      try {
+          this.startClimateWorkflow(parseInt(it.status));
+      }
+      catch{
+          this.loggerService.error(`Invalid sensor value for cwo sensor, status: "${it.status}"`);
+      }
     });
 
     // Initial display initialisieren
     setTimeout(() => this.synchronizeSpaceDisplays(), 2000);
+  }
+
+  /**
+  * Startet den Worflow für die Umweltkontrolle.
+  * @param co2Level Das übermittelte co2 level (1-4)
+  */
+  public async startClimateWorkflow(co2Level: number){
+
+    if(co2Level <= CWO_SENSOR_THRESHOLD) return;
+
+    // Öffne alle Schranken und starte Sirene
+    const barriers =
+      [
+        ... await this.deviceRepository.findBy({ type: { name: DeviceTypeName.EXIT_BARRIER}}),
+        ... await this.deviceRepository.findBy({ type: { name: DeviceTypeName.ENTER_BARRIER }})
+      ];
+    const alarms = await this.deviceRepository.findBy({ type: { name: DeviceTypeName.ALARM }});
+    barriers.forEach(it => this.communicationService.sendInstruction(it.mac,true));
+    alarms.forEach(it => this.communicationService.sendInstruction(it.mac,true));
+
+    // Nach Zeit X sollen Schranken und Sirene abgeschaltet werden
+    const start =  new Date(Date.now())
+    this.latestClimateWorkflowStart = start;
+
+    // Funktion zum schließen aller Schranken und der Sirene.
+    // Funktion wird nur ausführen, wenn der Workflow anschließend nicht nochmal gestartet wurde.
+    const funStopClimateWorkflow = () => {
+      if(this.latestClimateWorkflowStart !== start) return;
+      barriers.forEach(it => this.communicationService.sendInstruction(it.mac,false));
+      alarms.forEach(it => this.communicationService.sendInstruction(it.mac,false));
+    }
+
+    setTimeout(() => funStopClimateWorkflow(),CLIMATE_WORKFLOW_RUNTIME_SECONDS * 1000);
   }
 
   /**
@@ -127,6 +154,8 @@ export class WorkflowService {
 
       // Update Displays
       this.synchronizeSpaceDisplays();
+      // Update Lights
+      this.synchronizeSpaceLights();
 
       // Starte Parkleitsystem für X-Sekunden
       const parkingLotGuideDevice = await this.parkingLotGuidingDevicesRepository.findOneByNr(parkingLotStatus.nr);
@@ -138,7 +167,7 @@ export class WorkflowService {
         // Gebe Anweisung Geräte einzuschalten
         this.enableParkingGuideSystem([ parkingLotGuideDevice.mac, ...parkingLotGuideDevice.parents ]);
       }
-      
+
       // Schalte Einfahrschranken
       const enterServos = await deviceRepository.findBy({ type: { name: DeviceTypeName.ENTER_BARRIER }});
       enterServos.forEach(it => this.utilService.openServoForInterval(it.mac));
@@ -195,6 +224,8 @@ export class WorkflowService {
 
       // Update Displays
       this.synchronizeSpaceDisplays();
+      // Update Lights
+      this.synchronizeSpaceLights();
 
       // Schalte Ausfahrschranken
       const enterServos = await deviceRepository.findBy({ type: { name: DeviceTypeName.EXIT_BARRIER }});
@@ -211,6 +242,17 @@ export class WorkflowService {
     const spaceDisplays = await this.deviceRepository.findBy({ type: { name: DeviceTypeName.SPACE_DISPLAY }});
     const availableParkingLots = await this.utilService.countAvailableParkingLots();
     spaceDisplays.forEach(it => this.communicationService.sendInstruction(it.mac,availableParkingLots));
+  }
+
+  /**
+  * Updated alle Lichter, welche anzeigen ob Parkplätze verfügbar sind oder nicht.
+  */
+  private async synchronizeSpaceLights(){
+    const spaceEnterLights = await this.deviceRepository.findBy({ type: { name: DeviceTypeName.SPACE_ENTER_LIGHT }});
+    const spaceExitLights = await this.deviceRepository.findBy({ type: { name: DeviceTypeName.SPACE_ENTER_LIGHT }});
+    const availableParkingLots = await this.utilService.countAvailableParkingLots();
+    spaceEnterLights.forEach(it => this.communicationService.sendInstruction(it.mac,availableParkingLots > 0));
+    spaceExitLights.forEach(it => this.communicationService.sendInstruction(it.mac,availableParkingLots === 0));
   }
 
   /**

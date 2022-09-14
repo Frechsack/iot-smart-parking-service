@@ -5,7 +5,5 @@ export class PaymentDto {
     public readonly to: Date,
     public readonly price: number
   ){
-
   }
-
 }

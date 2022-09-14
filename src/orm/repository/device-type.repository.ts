@@ -11,13 +11,14 @@ export class DeviceTypeRepository extends AbstractRepository<DeviceType> {
     { name: DeviceTypeName.CWO_SENSOR },
     { name: DeviceTypeName.BARRIER },
     { name: DeviceTypeName.LAMP },
-    { name: DeviceTypeName.FAN },
     { name: DeviceTypeName.ALARM },
     { name: DeviceTypeName.SPACE_DISPLAY },
     { name: DeviceTypeName.PARKING_GUIDE_LAMP, parent: DeviceTypeName.LAMP },
     { name: DeviceTypeName.MOTION_SENSOR },
     { name: DeviceTypeName.ENTER_BARRIER, parent: DeviceTypeName.BARRIER },
-    { name: DeviceTypeName.EXIT_BARRIER, parent: DeviceTypeName.BARRIER }
+    { name: DeviceTypeName.EXIT_BARRIER, parent: DeviceTypeName.BARRIER },
+    { name: DeviceTypeName.SPACE_EXIT_LIGHT, parent: DeviceTypeName.LAMP },
+    { name: DeviceTypeName.SPACE_ENTER_LIGHT, parent: DeviceTypeName.LAMP }
   ];
 
   constructor(
