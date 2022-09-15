@@ -21,7 +21,7 @@ import { PaymentRepository } from 'src/orm/repository/payment.repository';
 import { filter } from 'rxjs';
 import { StatusMessage } from 'src/core/messages/status-message';
 
-const PARKING_GUIDE_SYSTEM_RUNTIME_SECONDS = 30;
+const PARKING_GUIDE_SYSTEM_RUNTIME_SECONDS = 15;
 const CWO_SENSOR_THRESHOLD = 2;
 const CLIMATE_WORKFLOW_RUNTIME_SECONDS = 20;
 
@@ -72,7 +72,10 @@ export class WorkflowService {
     });
 
     // Initial display initialisieren
-    setTimeout(() => this.synchronizeSpaceDisplays(), 2000);
+    setTimeout(() => {
+      this.synchronizeSpaceDisplays();
+      this.synchronizeSpaceLights();  
+    }, 2000);
   }
 
   /**

@@ -76,8 +76,8 @@ export class CommunicationService {
       .subscribe(it => this.mqttClient.publish('status',`${it.mac}:${it.status}`));
     this.registerLane.pipe(filter(it => it.isInternalMessage()))
       .subscribe(it => this.mqttClient.publish('register',`${it.mac}:${it.deviceType}:${it.parkingLotNr}:${it.parentDeviceMac}`));
-    this.instructionLane.pipe(filter(it => it.isInternalMessage()))
-      .subscribe(() => this.mqttClient.publish('scan',''));
+  //  this.instructionLane.pipe(filter(it => it.isInternalMessage()))
+  //    .subscribe(() => this.mqttClient.publish('scan',''));
   }
 
   public async sendInstruction(mac: string, instruction: any): Promise<void> {
