@@ -266,7 +266,7 @@ export class PlateDetectionService {
     const funStopPlateRecognition = async () => {
       return new Promise<void>(async (resolve) => {
         if(this.isDockerUsed()){
-          exec(`sudo docker container stop $(sudo docker container ls -q --filter name=${this.getDockerContrainerName(p)})`,() => {
+          exec(`sudo docker container stop $(sudo docker container ls -q --filter name=${this.getDockerContrainerName(p)}) -t 0`,() => {
             exec(`sudo docker container rm $(sudo docker container ls -q --filter name=${this.getDockerContrainerName(p)})`, () => {
               // Entferne den garantiert gestoppten Prozess aus ChildMap
               this.childProcessMap.delete(p);
