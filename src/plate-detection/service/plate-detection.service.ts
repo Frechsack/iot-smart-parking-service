@@ -267,11 +267,16 @@ export class PlateDetectionService {
       return new Promise<void>(async (resolve) => {
         if(this.isDockerUsed()){
           exec(`sudo docker container stop $(sudo docker container ls -q --filter name=${this.getDockerContrainerName(p)}) -t 0`,() => {
+            // Entferne den garantiert gestoppten Prozess aus ChildMap
+            this.childProcessMap.delete(p);
+            resolve();
+
+            /*
             exec(`sudo docker container rm $(sudo docker container ls -q --filter name=${this.getDockerContrainerName(p)})`, () => {
               // Entferne den garantiert gestoppten Prozess aus ChildMap
               this.childProcessMap.delete(p);
               resolve();
-            })
+            })*/
           });
         }
         else {
