@@ -74,7 +74,7 @@ export class WorkflowService {
     // Initial display initialisieren
     setTimeout(() => {
       this.synchronizeSpaceDisplays();
-      this.synchronizeSpaceLights();  
+      this.synchronizeSpaceLights();
     }, 2000);
   }
 
@@ -252,7 +252,7 @@ export class WorkflowService {
   */
   private async synchronizeSpaceLights(){
     const spaceEnterLights = await this.deviceRepository.findBy({ type: { name: DeviceTypeName.SPACE_ENTER_LIGHT }});
-    const spaceExitLights = await this.deviceRepository.findBy({ type: { name: DeviceTypeName.SPACE_ENTER_LIGHT }});
+    const spaceExitLights = await this.deviceRepository.findBy({ type: { name: DeviceTypeName.SPACE_EXIT_LIGHT }});
     const availableParkingLots = await this.utilService.countAvailableParkingLots();
     spaceEnterLights.forEach(it => this.communicationService.sendInstruction(it.mac,availableParkingLots > 0));
     spaceExitLights.forEach(it => this.communicationService.sendInstruction(it.mac,availableParkingLots === 0));
