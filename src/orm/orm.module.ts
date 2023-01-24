@@ -2,9 +2,9 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Account } from './entity/account';
 import { AuthenticationToken } from './entity/authentication-token';
+import { Capture } from './entity/capture';
 import { Device } from './entity/device';
 import { DeviceInstruction } from './entity/device-instruction';
-import { DeviceParents } from './entity/device-parents';
 import { DeviceStatus } from './entity/device-status';
 import { DeviceType } from './entity/device-type';
 import { LicensePlate } from './entity/license-plate';
@@ -15,6 +15,7 @@ import { ParkingLot } from './entity/parking-lot';
 import { ParkingLotGuidingDevices } from './entity/parking-lot-guiding-devices';
 import { ParkingLotStatus } from './entity/parking-lot-status';
 import { Payment } from './entity/payment';
+import { Zone } from './entity/zone';
 import { AccountRepository } from './repository/account.repository';
 import { AuthenticationTokenRepository } from './repository/authentication-token.repository';
 import { DeviceInstructionRepository } from './repository/device-instruction.repository';
@@ -29,7 +30,7 @@ import { ParkingLotGuidingDevicesRepository } from './repository/parking-lot-gui
 import { ParkingLotStatusRepository } from './repository/parking-lot-status.repository';
 import { ParkingLotRepository } from './repository/parking-lot.repository';
 import { PaymentRepository } from './repository/payment.repository';
-import { DeviceParentsRepository } from './repository/device-parents.repository';
+
 
 @Module({
   imports: [TypeOrmModule.forFeature([Account]),
@@ -45,8 +46,9 @@ import { DeviceParentsRepository } from './repository/device-parents.repository'
             TypeOrmModule.forFeature([DeviceStatus]),
             TypeOrmModule.forFeature([DeviceInstruction]),
             TypeOrmModule.forFeature([ParkingLotStatus]),
-            TypeOrmModule.forFeature([DeviceParents]),
             TypeOrmModule.forFeature([ParkingLotGuidingDevices]),
+            TypeOrmModule.forFeature([Zone]),
+            TypeOrmModule.forFeature([Capture]),
           ],
   providers: [
     AccountRepository,
@@ -62,7 +64,6 @@ import { DeviceParentsRepository } from './repository/device-parents.repository'
     DeviceInstructionRepository,
     LicensePlateStatusRepository,
     ParkingLotStatusRepository,
-    DeviceParentsRepository,
     ParkingLotGuidingDevicesRepository
   ],
   exports: [
@@ -79,7 +80,6 @@ import { DeviceParentsRepository } from './repository/device-parents.repository'
     DeviceInstructionRepository,
     LicensePlateStatusRepository,
     ParkingLotStatusRepository,
-    DeviceParentsRepository,
     ParkingLotGuidingDevicesRepository
   ],
 })
