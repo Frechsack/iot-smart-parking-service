@@ -20,14 +20,12 @@ import { PaymentRepository } from 'src/orm/repository/payment.repository';
 import { filter } from 'rxjs';
 import { StatusMessage } from 'src/core/messages/status-message';
 
-const PARKING_GUIDE_SYSTEM_RUNTIME_SECONDS = 15;
 const CWO_SENSOR_THRESHOLD = 2;
 const CLIMATE_WORKFLOW_RUNTIME_SECONDS = 20;
 
 @Injectable()
 export class WorkflowService {
 
-  private latestEnterWorkflowStart?: Date;
   private latestClimateWorkflowStart?: Date;
 
   constructor(
@@ -113,7 +111,7 @@ export class WorkflowService {
   * Startet den Workflow führ die Einfahrt eines erkannten Kennzeichens.
   * @param plate Das erkannte Kennzeichen inkl. Meta-Informationen der Kennzeichenerkennung.
   */
-  // TODO: Entfernen
+  
   public async startEnterWorkflow(plate: DetectedLicensePlate): Promise<void> {
     const transaction = async (manager: EntityManager): Promise<void> => {
       const licensePlateRepository = this.licensePlateRepository.forTransaction(manager);
@@ -159,7 +157,9 @@ export class WorkflowService {
       // Update Lights
       this.synchronizeSpaceLights();
 
-      // Starte Parkleitsystem für X-Sekunden
+      // Schalte Einfahrtschranken
+      const enterServos = await deviceRepository.findBy({ type: { name: DeviceTypeName.ENTER_BARRIER }});
+      enterServos.forEach(it => this.utilService.openServoForInterval(it.mac));
     }
 
     await this.licensePlateRepository.runTransaction(transaction);
@@ -244,37 +244,10 @@ export class WorkflowService {
     spaceExitLights.forEach(it => this.communicationService.sendInstruction(it.mac,availableParkingLots === 0));
   }
 
-  /**
-  * Aktiviert das Parkleitsystem für die angegebenen Geräte. Es wird davon ausgegangen das die übergebenen Geräte zum Parkleitsystem gehören.
-  * Sollte das System bereits in Verwendung sein, wird es deaktiviert und erneut aktiviert.
-  * @param devices Die zu schaltenden Geräte.
-  */
-  private async enableParkingGuideSystem(devices: string[]): Promise<void> {
-    this.latestEnterWorkflowStart = new Date();
-    // Deaktivierte alle bisherigen Parking-Guide-Lampen, muss erzwungen werden.
-    await this.disableParkingGuideSystem(true);
+   public async updateParkingguide (zonesNr: number[]): Promise<void> {
+    
 
-    await Promise.all(devices.map(async it => await this.communicationService.sendInstruction(it,true)));
+   }
 
-    // Request um Sensoren in Zukunft zu deaktivieren
-    setTimeout(async () => this.disableParkingGuideSystem(), PARKING_GUIDE_SYSTEM_RUNTIME_SECONDS * 1000);
-  }
-
-  /**
-  * Deaktiviert das Parkleitsystem.
-  * @param isForced Gibt an, ob eine deaktivierung erzwungen werden soll.
-  * Wurde sie nicht erzwungen, dann kann der Aufruf nicht erfolgreich sein, sollte das Parkleitsystem noch nicht für ein vorgegebenes Interval aktiv sein.
-  */
-  private async disableParkingGuideSystem(isForced: boolean = false): Promise<void> {
-    if(!isForced) {
-      const latestStart = this.latestEnterWorkflowStart!.getTime();
-      const end = latestStart + PARKING_GUIDE_SYSTEM_RUNTIME_SECONDS * 1000;
-      // Parkleitsystem läuft noch keine X Sekunden
-      if(Date.now() <= end) return;
-    }
-
-    // Schalte alle Parkleitsystem-lampen ab
-    const devices = await this.deviceRepository.findBy({ type: { name: DeviceTypeName.PARKING_GUIDE_LAMP }});
-    await Promise.all(devices.map(async it => await this.communicationService.sendInstruction(it.mac,false)));
-  }
+  
 }

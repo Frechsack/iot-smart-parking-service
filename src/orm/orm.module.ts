@@ -12,9 +12,11 @@ import { LicensePlatePhoto } from './entity/license-plate-photo';
 import { LicensePlatePhotoType } from './entity/license-plate-photo-type';
 import { LicensePlateStatus } from './entity/license-plate-status';
 import { ParkingLot } from './entity/parking-lot';
+import { ParkingLotPrioritising } from './entity/parking-lot-prioritising';
 import { ParkingLotStatus } from './entity/parking-lot-status';
 import { Payment } from './entity/payment';
 import { Zone } from './entity/zone';
+import { ZoneRouting } from './entity/zone-routing';
 import { AccountRepository } from './repository/account.repository';
 import { AuthenticationTokenRepository } from './repository/authentication-token.repository';
 import { DeviceInstructionRepository } from './repository/device-instruction.repository';
@@ -25,9 +27,12 @@ import { LicensePlatePhotoTypeRepository } from './repository/license-plate-phot
 import { LicensePlatePhotoRepository } from './repository/license-plate-photo.repository';
 import { LicensePlateStatusRepository } from './repository/license-plate-status.repository';
 import { LicensePlateRepository } from './repository/license-plate.repository';
+import { ParkingLotPrioritisingRepository } from './repository/parking-lot-prioritising.repository';
 import { ParkingLotStatusRepository } from './repository/parking-lot-status.repository';
 import { ParkingLotRepository } from './repository/parking-lot.repository';
 import { PaymentRepository } from './repository/payment.repository';
+import { ZoneRoutingRepository } from './repository/zone-routing.repository';
+import { ZoneRepository } from './repository/zone.repository';
 
 
 @Module({
@@ -46,6 +51,8 @@ import { PaymentRepository } from './repository/payment.repository';
             TypeOrmModule.forFeature([ParkingLotStatus]),
             TypeOrmModule.forFeature([Zone]),
             TypeOrmModule.forFeature([Capture]),
+            TypeOrmModule.forFeature([ParkingLotPrioritising]),
+            TypeOrmModule.forFeature([ZoneRouting]),
           ],
   providers: [
     AccountRepository,
@@ -60,7 +67,10 @@ import { PaymentRepository } from './repository/payment.repository';
     DeviceStatusRepository,
     DeviceInstructionRepository,
     LicensePlateStatusRepository,
-    ParkingLotStatusRepository
+    ParkingLotStatusRepository,
+    ZoneRoutingRepository,
+    ParkingLotPrioritisingRepository,
+    ZoneRepository
   ],
   exports: [
     AccountRepository,
@@ -75,7 +85,10 @@ import { PaymentRepository } from './repository/payment.repository';
     DeviceStatusRepository,
     DeviceInstructionRepository,
     LicensePlateStatusRepository,
-    ParkingLotStatusRepository
+    ParkingLotStatusRepository,
+    ZoneRoutingRepository,
+    ParkingLotPrioritisingRepository,
+    ZoneRepository
   ],
 })
 export class OrmModule {}
