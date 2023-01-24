@@ -2,6 +2,8 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
 import { Capture } from "./capture";
 import { Device } from "./device";
 import { ParkingLot } from "./parking-lot";
+import { ParkingLotPrioritising } from "./parking-lot-prioritising";
+import { ZoneRouting } from "./zone-routing";
 
 @Entity({ name: 'zone' })
 export class Zone {
@@ -30,4 +32,18 @@ export class Zone {
   @ManyToOne(() => Capture, it => it.zones, { nullable: false })
   @JoinColumn({ name: 'device_name' })
   public capture: Promise<Capture>;
+
+
+  @OneToMany(() => ParkingLotPrioritising, it => it.zone)
+  public parkingLotPriorisations: Promise<ParkingLotPrioritising[]>;
+
+  @OneToMany(() => ZoneRouting, it => it.from)
+  public routingFrom: Promise<ZoneRouting[]>;
+
+  @OneToMany(() => ZoneRouting, it => it.to)
+  public routingTo: Promise<ZoneRouting[]>;
+
+  @OneToMany(() => ZoneRouting, it => it.next)
+  public routingNext: Promise<ZoneRouting[]>;
+
 }

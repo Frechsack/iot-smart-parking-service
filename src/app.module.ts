@@ -25,6 +25,8 @@ import { ParkingLotModule } from './parking-lot/parking-lot.module';
 import { WorkflowModule } from './workflow/workflow.module';
 import { Zone } from './orm/entity/zone';
 import { Capture } from './orm/entity/capture';
+import { ZoneRouting } from './orm/entity/zone-routing';
+import { ParkingLotPrioritising } from './orm/entity/parking-lot-prioritising';
 
 @Module({
   imports: [
@@ -52,7 +54,9 @@ import { Capture } from './orm/entity/capture';
           LicensePlateStatus,
           ParkingLotStatus,
           Zone,
-          Capture
+          Capture,
+          ZoneRouting,
+          ParkingLotPrioritising
        ],
       synchronize: true,
     //  logging: ["query", "error"]
