@@ -244,10 +244,11 @@ export class WorkflowService {
     spaceExitLights.forEach(it => this.communicationService.sendInstruction(it.mac,availableParkingLots === 0));
   }
 
-   public async updateParkingguide (zonesNr: number[]): Promise<void> {
-    
+  public async updateParkingguide (zonesNr: number[]): Promise<void> {
+    // 1. Finde zu jeder Zone (zonesNr) einen freien Parkplatz. (prio Beachten)
+    // 2. Finde zu jedem gefundenem Parkplatz die Zone in der dieser Parkplatz liegt.
+    // 3. Finde zu der Zielzone einen Eintrag in der ZoneRouting-Tabelle.
+    // 4. Schalte alle ParkingGuide-Lampen, welche in der 'next' Zone bei der Gefundenen ZoneRouting liegt.
 
-   }
-
-  
+  }
 }
