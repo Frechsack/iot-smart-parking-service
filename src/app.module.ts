@@ -23,8 +23,8 @@ import { LicensePlateStatus } from './orm/entity/license-plate-status';
 import { ParkingLotStatus } from './orm/entity/parking-lot-status';
 import { ParkingLotModule } from './parking-lot/parking-lot.module';
 import { WorkflowModule } from './workflow/workflow.module';
-import { DeviceParents } from './orm/entity/device-parents';
-import { ParkingLotGuidingDevices } from './orm/entity/parking-lot-guiding-devices';
+import { Zone } from './orm/entity/zone';
+import { Capture } from './orm/entity/capture';
 
 @Module({
   imports: [
@@ -51,8 +51,8 @@ import { ParkingLotGuidingDevices } from './orm/entity/parking-lot-guiding-devic
           DeviceInstruction,
           LicensePlateStatus,
           ParkingLotStatus,
-          DeviceParents,
-          ParkingLotGuidingDevices
+          Zone,
+          Capture
        ],
       synchronize: true,
     //  logging: ["query", "error"]

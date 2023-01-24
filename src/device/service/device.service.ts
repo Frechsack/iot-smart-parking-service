@@ -53,12 +53,12 @@ export class DeviceService {
   public async getDevice(mac: string): Promise<DeviceDto> {
     const device = await this.deviceRepository.findOne({
       where: { mac: mac },
-      select: { mac: true, parent: { mac: true }, parkingLot: { nr: true}, type: { name: true } }
+      select: { mac: true, parkingLot: { nr: true}, type: { name: true } }
     });
 
     if(device == null)
       throw new HttpException('Device not found',404);
-    return new DeviceDto(device.mac,(await device.type).name, (await device.parkingLot)?.nr, (await device.parent)?.mac);
+    return new DeviceDto(device.mac,(await device.type).name, (await device.parkingLot)?.nr);
   }
 
   /**
@@ -72,12 +72,12 @@ export class DeviceService {
       skip: page * pageSize,
       take: pageSize,
       order: { mac: 'ASC'},
-      select: { mac: true, parent: { mac: true }, parkingLot: { nr: true}, type: { name: true } }
+      select: { mac: true, parkingLot: { nr: true}, type: { name: true } }
     });
 
     const devicePromises = devices[0].map(it => {
       return new Promise<DeviceDto>(async resolve => {
-        resolve(new DeviceDto(it.mac, (await it.type).name, (await it.parkingLot)?.nr, (await it.parent)?.mac ));
+        resolve(new DeviceDto(it.mac, (await it.type).name, (await it.parkingLot)?.nr ));
       });
     });
     return new PaginationDto(devices[1], await Promise.all(devicePromises));
@@ -198,6 +198,7 @@ export class DeviceService {
   * @param parkingLotNr Die optionale Parkplatzzuordnung.
   * @param parentDeviceMac Die optionale mac des übergeordneten Geräts.
   */
+ // TODO: Parent entfernen
   private async registerDevice(mac: string, deviceTypeName: DeviceTypeName, parkingLotNr: number | null | undefined = undefined, parentDeviceMac: string | null | undefined = undefined): Promise<Device>{
     const transaction = async (manager: EntityManager): Promise<Device> => {
       const deviceRepository = this.deviceRepository.forTransaction(manager);
@@ -241,7 +242,6 @@ export class DeviceService {
       }
       device.type = Promise.resolve(deviceType);
       device.parkingLot = Promise.resolve(parkingLot === null ? null : parkingLot);
-      device.parent = Promise.resolve(parentDevice === null ? null : parentDevice);
       return await deviceRepository.save(device)
     }
     try {

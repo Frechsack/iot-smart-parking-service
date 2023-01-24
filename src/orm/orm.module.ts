@@ -12,7 +12,6 @@ import { LicensePlatePhoto } from './entity/license-plate-photo';
 import { LicensePlatePhotoType } from './entity/license-plate-photo-type';
 import { LicensePlateStatus } from './entity/license-plate-status';
 import { ParkingLot } from './entity/parking-lot';
-import { ParkingLotGuidingDevices } from './entity/parking-lot-guiding-devices';
 import { ParkingLotStatus } from './entity/parking-lot-status';
 import { Payment } from './entity/payment';
 import { Zone } from './entity/zone';
@@ -26,7 +25,6 @@ import { LicensePlatePhotoTypeRepository } from './repository/license-plate-phot
 import { LicensePlatePhotoRepository } from './repository/license-plate-photo.repository';
 import { LicensePlateStatusRepository } from './repository/license-plate-status.repository';
 import { LicensePlateRepository } from './repository/license-plate.repository';
-import { ParkingLotGuidingDevicesRepository } from './repository/parking-lot-guiding-devices.repository';
 import { ParkingLotStatusRepository } from './repository/parking-lot-status.repository';
 import { ParkingLotRepository } from './repository/parking-lot.repository';
 import { PaymentRepository } from './repository/payment.repository';
@@ -46,7 +44,6 @@ import { PaymentRepository } from './repository/payment.repository';
             TypeOrmModule.forFeature([DeviceStatus]),
             TypeOrmModule.forFeature([DeviceInstruction]),
             TypeOrmModule.forFeature([ParkingLotStatus]),
-            TypeOrmModule.forFeature([ParkingLotGuidingDevices]),
             TypeOrmModule.forFeature([Zone]),
             TypeOrmModule.forFeature([Capture]),
           ],
@@ -63,8 +60,7 @@ import { PaymentRepository } from './repository/payment.repository';
     DeviceStatusRepository,
     DeviceInstructionRepository,
     LicensePlateStatusRepository,
-    ParkingLotStatusRepository,
-    ParkingLotGuidingDevicesRepository
+    ParkingLotStatusRepository
   ],
   exports: [
     AccountRepository,
@@ -79,8 +75,7 @@ import { PaymentRepository } from './repository/payment.repository';
     DeviceStatusRepository,
     DeviceInstructionRepository,
     LicensePlateStatusRepository,
-    ParkingLotStatusRepository,
-    ParkingLotGuidingDevicesRepository
+    ParkingLotStatusRepository
   ],
 })
 export class OrmModule {}

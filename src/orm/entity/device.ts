@@ -25,7 +25,7 @@ export class Device {
   @OneToMany(() => DeviceInstruction, it => it.device)
   public instructions: Promise<DeviceInstruction[]> 
 
-  @ManyToOne(() => Zone, it => it.devices, {nullable: true})
+  @ManyToOne(() => Zone, it => it.devices, {nullable: true })
   @JoinColumn({ name: 'zone_nr' })
   public zone: Promise<Zone|null>;
 }

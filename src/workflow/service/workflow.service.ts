@@ -11,7 +11,6 @@ import { LicensePlateRepository } from 'src/orm/repository/license-plate.reposit
 import { EntityManager } from 'typeorm';
 import { ParkingLotRepository } from 'src/orm/repository/parking-lot.repository';
 import { ParkingLotStatusRepository } from 'src/orm/repository/parking-lot-status.repository';
-import { ParkingLotGuidingDevicesRepository } from 'src/orm/repository/parking-lot-guiding-devices.repository';
 import { DeviceRepository } from 'src/orm/repository/device.repository';
 import { DeviceTypeName } from 'src/orm/entity/device-type';
 import { UtilService } from 'src/core/service/util.service';
@@ -39,7 +38,6 @@ export class WorkflowService {
     private readonly licensePlateRepository: LicensePlateRepository,
     private readonly parkingLotStatusRepository: ParkingLotStatusRepository,
     private readonly loggerService: LoggerService,
-    private readonly parkingLotGuidingDevicesRepository: ParkingLotGuidingDevicesRepository,
     private readonly deviceRepository: DeviceRepository,
     private readonly utilService: UtilService,
     private readonly paymentRepository: PaymentRepository
@@ -115,6 +113,7 @@ export class WorkflowService {
   * Startet den Workflow führ die Einfahrt eines erkannten Kennzeichens.
   * @param plate Das erkannte Kennzeichen inkl. Meta-Informationen der Kennzeichenerkennung.
   */
+  // TODO: Entfernen
   public async startEnterWorkflow(plate: DetectedLicensePlate): Promise<void> {
     const transaction = async (manager: EntityManager): Promise<void> => {
       const licensePlateRepository = this.licensePlateRepository.forTransaction(manager);
@@ -161,19 +160,6 @@ export class WorkflowService {
       this.synchronizeSpaceLights();
 
       // Starte Parkleitsystem für X-Sekunden
-      const parkingLotGuideDevice = await this.parkingLotGuidingDevicesRepository.findOneByNr(parkingLotStatus.nr);
-      if(parkingLotGuideDevice == null){
-        this.loggerService.warn(`No parking-guide installed, parking-lot: "${parkingLotStatus.nr}"`);
-      }
-      else{
-        this.loggerService.log(`Enable parking-guide-system, parking-lot: "${parkingLotStatus.nr}"`)
-        // Gebe Anweisung Geräte einzuschalten
-        this.enableParkingGuideSystem([ parkingLotGuideDevice.mac, ...parkingLotGuideDevice.parents ]);
-      }
-
-      // Schalte Einfahrschranken
-      const enterServos = await deviceRepository.findBy({ type: { name: DeviceTypeName.ENTER_BARRIER }});
-      enterServos.forEach(it => this.utilService.openServoForInterval(it.mac));
     }
 
     await this.licensePlateRepository.runTransaction(transaction);

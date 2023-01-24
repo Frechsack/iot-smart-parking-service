@@ -11,7 +11,7 @@ export class ParkingLot {
   @OneToMany(() => Device, it => it.parkingLot )
   public devices: Promise<Device[]>;
 
-  @ManyToOne(() => Zone, it => it.parkingLots)
+  @ManyToOne(() => Zone, it => it.parkingLots )
   @JoinColumn({ name: 'zone_nr' })
   public zone: Promise<Zone|null>;
 }

@@ -25,16 +25,4 @@ export class Capture {
 
   @OneToMany(() => Zone, it => it.capture)
   public zones: Promise<Zone[]>;
-
-
-  /*
-
-  @OneToMany(() => Device, it => it.zone)
-  public devices: Promise<Device[]>;
-
-  @OneToMany(()=>ParkingLot, it => it.zone)
-  public parkingLots: Promise<ParkingLot[]>;
-
-    */
-
 }
