@@ -3,6 +3,7 @@ import { DeviceInstruction } from "./device-instruction";
 import { DeviceStatus } from "./device-status";
 import { DeviceType } from "./device-type";
 import { ParkingLot } from "./parking-lot";
+import { Zone } from "./zone";
 
 @Entity({ name: 'device' })
 export class Device {
@@ -22,12 +23,9 @@ export class Device {
   public status: Promise<DeviceStatus[]>
 
   @OneToMany(() => DeviceInstruction, it => it.device)
-  public instructions: Promise<DeviceInstruction[]>
+  public instructions: Promise<DeviceInstruction[]> 
 
-  @OneToMany(() => Device, it => it.parent)
-  public children: Promise<Device[]>;
-
-  @ManyToOne(() => Device, it => it.children, { nullable: true })
-  @JoinColumn({ name : 'parent_mac'})
-  public parent: Promise<Device | null>;
+  @ManyToOne(() => Zone, it => it.devices, {nullable: true})
+  @JoinColumn({ name: 'zone_nr' })
+  public zone: Promise<Zone|null>;
 }
