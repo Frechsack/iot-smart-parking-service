@@ -19,6 +19,12 @@ import { AccountRepository } from 'src/orm/repository/account.repository';
 import { PaymentRepository } from 'src/orm/repository/payment.repository';
 import { filter } from 'rxjs';
 import { StatusMessage } from 'src/core/messages/status-message';
+import { ZoneRepository } from 'src/orm/repository/zone.repository';
+import { ParkingLotPrioritisingRepository } from 'src/orm/repository/parking-lot-prioritising.repository';
+import { ParkingLotStatus } from 'src/orm/entity/parking-lot-status';
+import { ZoneRoutingRepository } from 'src/orm/repository/zone-routing.repository';
+import { Zone } from 'src/orm/entity/zone';
+import { DeviceInstruction } from 'src/orm/entity/device-instruction';
 
 const CWO_SENSOR_THRESHOLD = 2;
 const CLIMATE_WORKFLOW_RUNTIME_SECONDS = 20;
@@ -38,7 +44,10 @@ export class WorkflowService {
     private readonly loggerService: LoggerService,
     private readonly deviceRepository: DeviceRepository,
     private readonly utilService: UtilService,
-    private readonly paymentRepository: PaymentRepository
+    private readonly paymentRepository: PaymentRepository,
+    private readonly zoneRepository: ZoneRepository,
+    private readonly parkingLotPrioritisingRepository: ParkingLotPrioritisingRepository,
+    private readonly zoneRoutingRepository: ZoneRoutingRepository
   ){
     this.loggerService.context = WorkflowService.name;
 
@@ -244,11 +253,63 @@ export class WorkflowService {
     spaceExitLights.forEach(it => this.communicationService.sendInstruction(it.mac,availableParkingLots === 0));
   }
 
-  public async updateParkingguide (zonesNr: number[]): Promise<void> {
-    // 1. Finde zu jeder Zone (zonesNr) einen freien Parkplatz. (prio Beachten)
-    // 2. Finde zu jedem gefundenem Parkplatz die Zone in der dieser Parkplatz liegt.
-    // 3. Finde zu der Zielzone einen Eintrag in der ZoneRouting-Tabelle.
-    // 4. Schalte alle ParkingGuide-Lampen, welche in der 'next' Zone bei der Gefundenen ZoneRouting liegt.
 
+  /**
+   * Berechnet den optimalen Parkplatz und schaltet passend dazu das Parkleitsystem.
+   * @param zonesNr Die Nummern der Zonen die zu schalten sind.
+   */
+  private async updateParkingGuideForZone(zonesNr: number): Promise<void>{
+    const zone = await this.zoneRepository.findByNr(zonesNr);
+    if(zone == null)
+      return;
+      //Evtl. Ausgabe auf Console oder Logger das Zone nicht passt
+    const parkingLotPrioritisings = await this.parkingLotPrioritisingRepository.findByZone(zone);
+        //1. Prüfe welchge Parkplätze im Array parkingLotPrioritisings noch verfügbar sind (leeren Array erstellen, for scheife über alle Parkinglotprioritisings und gebe nur die zurück, welche frei sind)
+    const freeParkingLots = [];
+    for(let i = 0; i < parkingLotPrioritisings.length; i++) {
+      if (await this.parkingLotStatusRepository.isAvailable((await parkingLotPrioritisings[i].parkingLot).nr) == true) { 
+        freeParkingLots.push(parkingLotPrioritisings[i])
+      }
+    }
+  
+
+    if(freeParkingLots.length == 0)
+      return;
+
+    let highestPrio = freeParkingLots[0];
+    for (let i = 1; i < freeParkingLots.length; i++){
+      if(highestPrio.prio < freeParkingLots[i].prio)
+        highestPrio = freeParkingLots[i]
+    }
+    
+    const targetZone = await highestPrio.zone;
+
+    if(targetZone == null)
+      return;
+
+    const routing = await this.zoneRoutingRepository.findByFromAndTo(zone, targetZone);
+    if(routing == null)
+      return;
+
+    const zonesToActivate = [await routing.next, await routing.from];
+    for(let i = 0; i < zonesToActivate.length; i++){
+      const parkingGuideLamps = await this.deviceRepository.findParkingGuideLampsByZone(zonesToActivate[i]);
+      for(let y = 0; y < parkingGuideLamps.length; y++){
+        this.communicationService.sendInstruction(parkingGuideLamps[y].mac, true)
+      }          
+    }
+  } 
+
+  /**
+   * Aktualisiert das Parkleitsystem für die übergegebenen Zonen.
+   * @param zonesNr Die Nummern der Zonen die zu schalten sind.
+   */
+  public async updateParkingguide (zonesNr: number[]): Promise<void> {
+    const allParkingGuideLamps = await this.deviceRepository.findAllParkingGuideLamps();
+    for(let i = 0; i < allParkingGuideLamps.length; i++)
+      this.communicationService.sendInstruction(allParkingGuideLamps[i].mac, false)
+
+    for(let j = 0; j < zonesNr.length; j++)
+      this.updateParkingGuideForZone(zonesNr[j])
   }
 }

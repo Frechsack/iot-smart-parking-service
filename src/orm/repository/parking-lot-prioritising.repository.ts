@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EntityManager, Repository } from 'typeorm';
 import { ParkingLotPrioritising } from '../entity/parking-lot-prioritising';
 import { Payment } from '../entity/payment';
+import { Zone } from '../entity/zone';
 import { ZoneRouting } from '../entity/zone-routing';
 import { AbstractRepository } from './abstract.repository';
 
@@ -23,5 +24,9 @@ export class ParkingLotPrioritisingRepository extends AbstractRepository<Parking
   */
   public forTransaction(manager: EntityManager): ParkingLotPrioritisingRepository {
     return new ParkingLotPrioritisingRepository(manager.getRepository(ParkingLotPrioritising));
+  }
+
+  public findByZone(zone: Zone): Promise<ParkingLotPrioritising[]>{
+    return this.find({where:{zone:{nr:zone.nr}}})
   }
 }

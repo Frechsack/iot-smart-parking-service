@@ -24,4 +24,8 @@ export class ZoneRepository extends AbstractRepository<Zone> {
   public forTransaction(manager: EntityManager): ZoneRepository {
     return new ZoneRepository(manager.getRepository(Zone));
   }
+
+  public async findByNr(nr: number): Promise<Zone|null>{
+    return this.findOneBy({nr:nr});
+  }
 }

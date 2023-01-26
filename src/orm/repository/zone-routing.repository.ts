@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, Repository } from 'typeorm';
+import { EntityManager, FindOptionsWhere, Repository } from 'typeorm';
 import { Payment } from '../entity/payment';
+import { Zone } from '../entity/zone';
 import { ZoneRouting } from '../entity/zone-routing';
 import { AbstractRepository } from './abstract.repository';
 
@@ -23,4 +24,10 @@ export class ZoneRoutingRepository extends AbstractRepository<ZoneRouting> {
   public forTransaction(manager: EntityManager): ZoneRoutingRepository {
     return new ZoneRoutingRepository(manager.getRepository(ZoneRouting));
   }
+
+  public findByFromAndTo(from: Zone, to: Zone): Promise<ZoneRouting|null>{
+    return this.findOneBy({from:{nr:from.nr},to:{nr:to.nr}});
+  }
+    
+
 }

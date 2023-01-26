@@ -34,4 +34,11 @@ export class ParkingLotStatusRepository extends AbstractRepository<ParkingLotSta
   public async isParkingLotAvailable(): Promise<boolean> {
     return (await this.findFirstAvailable()) !== null;
   }
+
+  public async isAvailable(nr: number): Promise<boolean> {
+    const status = await this.findOneByNr(nr);
+    if(status == null)
+    return false;
+    return status.status == 'false' || status.status == null;
+  }
 }
