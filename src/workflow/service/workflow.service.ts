@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpServer, Injectable } from '@nestjs/common';
 import { CommunicationService } from 'src/core/service/communication.service';
 import { LicensePlatePhotoTypeName } from 'src/orm/entity/license-plate-photo-type';
 import { DetectedLicensePlate } from 'src/plate-detection/detected-license-plate';
@@ -8,7 +8,7 @@ import { LicensePlatePhotoRepository } from 'src/orm/repository/license-plate-ph
 import { LicensePlatePhotoTypeRepository } from 'src/orm/repository/license-plate-photo-type.repository';
 import { LicensePlatePhoto } from 'src/orm/entity/license-plate-photo';
 import { LicensePlateRepository } from 'src/orm/repository/license-plate.repository';
-import { EntityManager } from 'typeorm';
+import { EntityManager, PrimaryColumnCannotBeNullableError } from 'typeorm';
 import { ParkingLotRepository } from 'src/orm/repository/parking-lot.repository';
 import { ParkingLotStatusRepository } from 'src/orm/repository/parking-lot-status.repository';
 import { DeviceRepository } from 'src/orm/repository/device.repository';
@@ -25,6 +25,11 @@ import { ParkingLotStatus } from 'src/orm/entity/parking-lot-status';
 import { ZoneRoutingRepository } from 'src/orm/repository/zone-routing.repository';
 import { Zone } from 'src/orm/entity/zone';
 import { DeviceInstruction } from 'src/orm/entity/device-instruction';
+import { ConfigService } from '@nestjs/config';
+import { HttpService } from '@nestjs/axios';
+import { CaptureRepository } from 'src/orm/repository/capture.repository';
+import { CaptureDto, InitDto, ZoneDto } from '../dto/init-dto';
+import { response } from 'express';
 
 const CWO_SENSOR_THRESHOLD = 2;
 const CLIMATE_WORKFLOW_RUNTIME_SECONDS = 20;
@@ -47,7 +52,10 @@ export class WorkflowService {
     private readonly paymentRepository: PaymentRepository,
     private readonly zoneRepository: ZoneRepository,
     private readonly parkingLotPrioritisingRepository: ParkingLotPrioritisingRepository,
-    private readonly zoneRoutingRepository: ZoneRoutingRepository
+    private readonly zoneRoutingRepository: ZoneRoutingRepository,
+    private readonly configService: ConfigService,
+    private readonly httpService: HttpService,
+    private readonly captureRepository: CaptureRepository
   ){
     this.loggerService.context = WorkflowService.name;
 
@@ -81,6 +89,11 @@ export class WorkflowService {
       this.synchronizeSpaceDisplays();
       this.synchronizeSpaceLights();
     }, 2000);
+
+    // Initial Overwatch starten
+    setTimeout(() => {
+      this.initOverwatch();
+    }, 5000);
   }
 
   /**
@@ -256,60 +269,90 @@ export class WorkflowService {
 
   /**
    * Berechnet den optimalen Parkplatz und schaltet passend dazu das Parkleitsystem.
-   * @param zonesNr Die Nummern der Zonen die zu schalten sind.
+   * @param zoneNr Die Nummern der Zonen die zu schalten sind.
    */
-  private async updateParkingGuideForZone(zonesNr: number): Promise<void>{
-    const zone = await this.zoneRepository.findByNr(zonesNr);
-    if(zone == null)
-      return;
-      //Evtl. Ausgabe auf Console oder Logger das Zone nicht passt
-    const parkingLotPrioritisings = await this.parkingLotPrioritisingRepository.findByZone(zone);
-        //1. Prüfe welchge Parkplätze im Array parkingLotPrioritisings noch verfügbar sind (leeren Array erstellen, for scheife über alle Parkinglotprioritisings und gebe nur die zurück, welche frei sind)
-    const freeParkingLots = [];
-    for(let i = 0; i < parkingLotPrioritisings.length; i++) {
-      if (await this.parkingLotStatusRepository.isAvailable((await parkingLotPrioritisings[i].parkingLot).nr) == true) { 
-        freeParkingLots.push(parkingLotPrioritisings[i])
-      }
+  private async updateParkingGuideForZone(zoneNr: number): Promise<void> {
+    const asyncFilterFun = async <E> (array: E[], predicate: (item: E) => Promise<boolean>): Promise<E[]> => {
+      const isFilter = await Promise.all(array.map(it => predicate(it)));
+      return array.filter((_, index) => isFilter[index]);
     }
-  
 
-    if(freeParkingLots.length == 0)
+    const fromZone = await this.zoneRepository.findByNr(zoneNr);
+    if(fromZone == null) {
+      this.loggerService.warn(`Unknown zone: '${zoneNr}'.`);
       return;
-
-    let highestPrio = freeParkingLots[0];
-    for (let i = 1; i < freeParkingLots.length; i++){
-      if(highestPrio.prio < freeParkingLots[i].prio)
-        highestPrio = freeParkingLots[i]
     }
+
+    const parkingLotPrioritisings = 
+      await this.parkingLotPrioritisingRepository.findAllByZone(fromZone);
+    const availableParkingLotPrioritisings = 
+      await asyncFilterFun(parkingLotPrioritisings, async it => this.parkingLotStatusRepository.isAvailable((await it.parkingLot).nr));
     
-    const targetZone = await highestPrio.zone;
 
-    if(targetZone == null)
+    if(availableParkingLotPrioritisings.length == 0)
       return;
 
-    const routing = await this.zoneRoutingRepository.findByFromAndTo(zone, targetZone);
-    if(routing == null)
-      return;
+    const topPrioritisedParkingLot = await availableParkingLotPrioritisings.sort((lhs, rhs) => lhs > rhs ? 1 : rhs > lhs ? -1 : 0)[0].parkingLot;
+    const toZone = await topPrioritisedParkingLot.zone;
 
-    const zonesToActivate = [await routing.next, await routing.from];
-    for(let i = 0; i < zonesToActivate.length; i++){
-      const parkingGuideLamps = await this.deviceRepository.findParkingGuideLampsByZone(zonesToActivate[i]);
-      for(let y = 0; y < parkingGuideLamps.length; y++){
-        this.communicationService.sendInstruction(parkingGuideLamps[y].mac, true)
-      }          
+    if(toZone == null){
+      this.loggerService.warn(`Top-prioritized parking-lot is not in a zone: parking-lot: '${topPrioritisedParkingLot.nr}', from-zone: '${fromZone.nr}'.`);
+      return;
     }
+
+    if(fromZone.nr === toZone.nr)
+      return;
+
+    const routing = await this.zoneRoutingRepository.findOneByFromAndTo(fromZone, toZone);
+    if(routing == null){
+      this.loggerService.warn(`No routing information for zones: from: '${fromZone.nr}', to: '${toZone.nr}'.`);  
+      return;
+    }
+
+    [
+    ...(await this.deviceRepository.findAllParkingGuideLampsByZone(await routing.next)),
+    ...(await this.deviceRepository.findAllParkingGuideLampsByZone(await routing.from))
+    ]
+      .forEach(it => this.communicationService.sendInstruction(it.mac, true));
   } 
 
   /**
    * Aktualisiert das Parkleitsystem für die übergegebenen Zonen.
    * @param zonesNr Die Nummern der Zonen die zu schalten sind.
    */
-  public async updateParkingguide (zonesNr: number[]): Promise<void> {
-    const allParkingGuideLamps = await this.deviceRepository.findAllParkingGuideLamps();
-    for(let i = 0; i < allParkingGuideLamps.length; i++)
-      this.communicationService.sendInstruction(allParkingGuideLamps[i].mac, false)
+  public async updateParkingGuide (zonesNr: number[]): Promise<void> {
+    const parkingGuideLamps = await this.deviceRepository.findAllParkingGuideLamps();
 
-    for(let j = 0; j < zonesNr.length; j++)
-      this.updateParkingGuideForZone(zonesNr[j])
+    parkingGuideLamps.forEach(it => this.communicationService.sendInstruction(it.mac, false));
+    zonesNr.forEach(it => this.updateParkingGuideForZone(it));
   }
+
+  /**
+   * Startet das Overwatch Programm. 
+   */
+  public async initOverwatch(): Promise<void> {
+    const captures = await this.captureRepository.find();
+    const captureMap = new Map<string, CaptureDto>();
+    const zoneMap = new Map<number, ZoneDto>();
+    captures.forEach(it => captureMap.set(it.deviceName, { height: it.height, width: it.width, x: it.x, y: it.y}));
+    await Promise.all(captures.map(async capture => {
+      (await capture.zones).forEach(zone => zoneMap.set(zone.nr, { offsetX: zone.offSetX, offsetY: zone.offSetY, deviceName: capture.deviceName, height: zone.height, width: zone.width }))
+    }));
+
+    const endpoint = this.configService.get<string>('OVERWATCH_INIT_ENDPOINT')!;
+    const key = this.configService.get<string>('OVERWATCH_INIT_KEY');
+
+    this.httpService.post(endpoint, new InitDto(captureMap, zoneMap).toJson(), { headers: { 'key' : key, 'content-type': 'application/json' }})
+    .subscribe({
+      error: error => this.loggerService.error(`Error during init of overwatch: ${error}`),
+      next: response => {
+        if(response.status > 204)
+          this.loggerService.error(`Error during init of overwatch. Status-code: '${response.status}'.`);
+        else
+          this.loggerService.log('Overwatch initialized.');
+      }
+    })
+  }
+
+
 }

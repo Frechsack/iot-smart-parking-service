@@ -1,3 +1,4 @@
+import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { CoreModule } from 'src/core/core.module';
 import { DeviceModule } from 'src/device/device.module';
@@ -8,7 +9,7 @@ import { WorkflowController } from './controller/workflow.controller';
 import { WorkflowService } from './service/workflow.service';
 
 @Module({
-  imports: [ OrmModule, PlateDetectionModule, DeviceModule, CoreModule, ParkingLotModule ],
+  imports: [ OrmModule, PlateDetectionModule, DeviceModule, CoreModule, ParkingLotModule, HttpModule ],
   providers: [ WorkflowService ],
   controllers:[WorkflowController]
 })
