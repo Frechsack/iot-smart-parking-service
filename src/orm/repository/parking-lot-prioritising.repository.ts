@@ -26,7 +26,7 @@ export class ParkingLotPrioritisingRepository extends AbstractRepository<Parking
     return new ParkingLotPrioritisingRepository(manager.getRepository(ParkingLotPrioritising));
   }
 
-  public findByZone(zone: Zone): Promise<ParkingLotPrioritising[]>{
+  public findAllByZone(zone: Zone): Promise<ParkingLotPrioritising[]>{
     return this.find({where:{zone:{nr:zone.nr}}})
   }
 }

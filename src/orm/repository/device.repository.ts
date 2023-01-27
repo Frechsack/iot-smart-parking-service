@@ -34,7 +34,7 @@ export class DeviceRepository extends AbstractRepository<Device> {
     return element !== null;
   }
 
-  public async findParkingGuideLampsByZone(zone: Zone): Promise<Device[]>{
+  public async findAllParkingGuideLampsByZone(zone: Zone): Promise<Device[]>{
     return this.findBy({zone:{nr:zone.nr}, type:{name:DeviceTypeName.PARKING_GUIDE_LAMP}});
   }
 

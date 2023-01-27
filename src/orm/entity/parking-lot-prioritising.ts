@@ -16,7 +16,7 @@ export class ParkingLotPrioritising {
   @JoinColumn({ name: 'parking_lot_nr'})
   public parkingLot: Promise<ParkingLot>;
 
-  @Column({ type: 'int', nullable: false})
+  @Column({ type: 'int', nullable: false, primary: true })
   public prio: number;
 
   @Column({primary: true, name: 'zone_nr'})

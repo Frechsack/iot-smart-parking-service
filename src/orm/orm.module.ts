@@ -19,6 +19,7 @@ import { Zone } from './entity/zone';
 import { ZoneRouting } from './entity/zone-routing';
 import { AccountRepository } from './repository/account.repository';
 import { AuthenticationTokenRepository } from './repository/authentication-token.repository';
+import { CaptureRepository } from './repository/capture.repository';
 import { DeviceInstructionRepository } from './repository/device-instruction.repository';
 import { DeviceStatusRepository } from './repository/device-status.repository';
 import { DeviceTypeRepository } from './repository/device-type.repository';
@@ -70,7 +71,8 @@ import { ZoneRepository } from './repository/zone.repository';
     ParkingLotStatusRepository,
     ZoneRoutingRepository,
     ParkingLotPrioritisingRepository,
-    ZoneRepository
+    ZoneRepository,
+    CaptureRepository
   ],
   exports: [
     AccountRepository,
@@ -88,7 +90,8 @@ import { ZoneRepository } from './repository/zone.repository';
     ParkingLotStatusRepository,
     ZoneRoutingRepository,
     ParkingLotPrioritisingRepository,
-    ZoneRepository
+    ZoneRepository,
+    CaptureRepository
   ],
 })
 export class OrmModule {}

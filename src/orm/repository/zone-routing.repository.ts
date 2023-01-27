@@ -25,7 +25,7 @@ export class ZoneRoutingRepository extends AbstractRepository<ZoneRouting> {
     return new ZoneRoutingRepository(manager.getRepository(ZoneRouting));
   }
 
-  public findByFromAndTo(from: Zone, to: Zone): Promise<ZoneRouting|null>{
+  public findOneByFromAndTo(from: Zone, to: Zone): Promise<ZoneRouting|null>{
     return this.findOneBy({from:{nr:from.nr},to:{nr:to.nr}});
   }
     
