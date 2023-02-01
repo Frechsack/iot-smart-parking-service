@@ -35,7 +35,7 @@ export class DeviceService {
     this.loggerService.context = DeviceService.name;
     // Externe Informationen speichern
     this.communicationService.registerLane
-      .subscribe(it => this.registerDevice(it.mac,it.deviceType,it.parkingLotNr,it.parentDeviceMac).catch(() => {}));
+      .subscribe(it => this.registerDevice(it.mac,it.deviceType,it.parkingLotNr).catch(() => {}));
     this.communicationService.statusLane
       .subscribe(it => this.saveDeviceStatus(it.mac, it.status).catch(() => {}));
     this.communicationService.instructionLane
@@ -198,25 +198,11 @@ export class DeviceService {
   * @param parkingLotNr Die optionale Parkplatzzuordnung.
   * @param parentDeviceMac Die optionale mac des übergeordneten Geräts.
   */
- // TODO: Parent entfernen
-  private async registerDevice(mac: string, deviceTypeName: DeviceTypeName, parkingLotNr: number | null | undefined = undefined, parentDeviceMac: string | null | undefined = undefined): Promise<Device>{
+  private async registerDevice(mac: string, deviceTypeName: DeviceTypeName, parkingLotNr: number | null | undefined = undefined): Promise<Device>{
     const transaction = async (manager: EntityManager): Promise<Device> => {
       const deviceRepository = this.deviceRepository.forTransaction(manager);
       const deviceTypeRepository = this.deviceTypeRepository.forTransaction(manager);
       const parkingLotRepository = this.parkingLotRepository.forTransaction(manager);
-
-      // Prüfe ob eigene & eltern element gleiche mac haben
-      if(mac === parentDeviceMac)
-        throw new Error('Parent-device-mac and device-mac are equal');
-
-      // Finde Elterngerät.
-      const parentDevice: Device | null = parentDeviceMac == null ?
-        null :
-        await deviceRepository.findOneByMac(parentDeviceMac);
-
-      // Prüfe ob Elterngerät existiert
-      if(parentDeviceMac != null && parentDevice === null)
-        this.thrownUnknowDeviceException(parentDeviceMac);
 
       // Finde Parkplatz.
       let parkingLot: ParkingLot | null = parkingLotNr == null ?

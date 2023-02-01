@@ -75,7 +75,7 @@ export class CommunicationService {
     this.statusLane.pipe(filter(it => it.isInternalMessage()))
       .subscribe(it => this.mqttClient.publish('status',`${it.mac}:${it.status}`));
     this.registerLane.pipe(filter(it => it.isInternalMessage()))
-      .subscribe(it => this.mqttClient.publish('register',`${it.mac}:${it.deviceType}:${it.parkingLotNr}:${it.parentDeviceMac}`));
+      .subscribe(it => this.mqttClient.publish('register',`${it.mac}:${it.deviceType}:${it.parkingLotNr}`));
   //  this.instructionLane.pipe(filter(it => it.isInternalMessage()))
   //    .subscribe(() => this.mqttClient.publish('scan',''));
   }
