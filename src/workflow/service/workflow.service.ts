@@ -17,7 +17,7 @@ import { UtilService } from 'src/core/service/util.service';
 import { Payment } from 'src/orm/entity/payment';
 import { AccountRepository } from 'src/orm/repository/account.repository';
 import { PaymentRepository } from 'src/orm/repository/payment.repository';
-import { filter, firstValueFrom, map, tap } from 'rxjs';
+import { filter, firstValueFrom, map, ReadableStreamLike, tap } from 'rxjs';
 import { StatusMessage } from 'src/core/messages/status-message';
 import { ZoneRepository } from 'src/orm/repository/zone.repository';
 import { ParkingLotPrioritisingRepository } from 'src/orm/repository/parking-lot-prioritising.repository';
@@ -292,7 +292,7 @@ export class WorkflowService {
     if(availableParkingLotPrioritisings.length == 0)
       return;
 
-    const topPrioritisedParkingLot = await availableParkingLotPrioritisings.sort((lhs, rhs) => lhs > rhs ? 1 : rhs > lhs ? -1 : 0)[0].parkingLot;
+    const topPrioritisedParkingLot = await availableParkingLotPrioritisings.sort((lhs, rhs) => lhs > rhs ? -1 : rhs > lhs ? 1 : 0)[0].parkingLot;
     const toZone = await topPrioritisedParkingLot.zone;
 
     if(toZone == null){
@@ -320,7 +320,7 @@ export class WorkflowService {
    * Aktualisiert das Parkleitsystem für die übergegebenen Zonen.
    * @param zonesNr Die Nummern der Zonen die zu schalten sind.
    */
-  public async updateParkingGuide (zonesNr: number[]): Promise<void> {
+  public async updateOverwatch (zonesNr: number[]): Promise<void> {
     const parkingGuideLamps = await this.deviceRepository.findAllParkingGuideLamps();
 
     parkingGuideLamps.forEach(it => this.communicationService.sendInstruction(it.mac, false));
@@ -354,25 +354,20 @@ export class WorkflowService {
     })
   }
 
-  public async requestComputedImage(): Promise<Buffer>{
+  /**
+   * Speichert die Bildausgabe der Overwatch in dem übergebenem stream.
+   * @param request Der Stream, in welchen das Bild der Overwatch gespeichert werden soll.
+   */
+  public async saveComputedImageInStream(request: WritableStream): Promise<void>{
     const endpoint = this.configService.get<string>('OVERWATCH_IMAGE_ENDPOINT')!;
     const key = this.configService.get<string>('OVERWATCH_KEY');
-
-   const response = await this.httpService.axiosRef({
-      url: endpoint,
-      method: 'GET',
-      responseType: 'stream',
-      headers: { 'key' : key, 'content-type': 'image/jpeg' }
-  });
-
-  return response.data;
-
-/*
-    return await firstValueFrom(this.httpService.get<any>(endpoint, { headers: { 'key' : key, 'content-type': 'image/jpeg' }})
-        .pipe(map(it => it.data),
-        map(it =>  
-          Buffer.from(it, 'binary')
-        )));*/
+    const response = await this.httpService.axiosRef({
+        url: endpoint,
+        method: 'GET',
+        responseType: 'stream',
+        headers: { 'key' : key }
+    });
+    response.data.pipe(request);
   }
 
 

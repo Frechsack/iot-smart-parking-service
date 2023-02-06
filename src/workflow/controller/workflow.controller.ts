@@ -1,6 +1,7 @@
-import { HttpService } from '@nestjs/axios';
-import { Controller, Query,  Put, Headers, HttpException, HttpStatus, Get, Header } from '@nestjs/common';
+import { Controller, Query,  Put, Headers, HttpException, HttpStatus, Get, Header, Res, UseInterceptors, Post } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { AdminAuthenticationInterceptor } from 'src/account/interceptor/admin-authentication.interceptor';
+import { AUTHENTICATION_HEADER_TOKEN } from 'src/account/interceptor/authentication.interceptor';
 import { LoggerService } from 'src/core/service/logger.service';
 import { WorkflowService } from '../service/workflow.service';
 
@@ -16,19 +17,26 @@ export class WorkflowController {
             loggerService.context = WorkflowController.name;
     }
 
+    @Post('parking-guide')
+    @UseInterceptors(AdminAuthenticationInterceptor)
+    public async initOverwatch(): Promise<void> {
+        await this.service.initOverwatch();
+    }
+
     @Put('parking-guide')
-    public async updateTakenZones(@Query('zones') zones: number[] | number, @Headers('key') key: string): Promise<void> {
+    public async updateOverwatch(@Query('zones') zones: number[] | number, @Headers('key') key: string): Promise<void> {
         if(key === this.configService.get('SERVICE_KEY'))
-            this.service.updateParkingGuide(Array.isArray(zones) ? zones : [zones]);
+            this.service.updateOverwatch(Array.isArray(zones) ? zones : [zones]);
         else {
             this.loggerService.warn('Illegal access to /workflow/parking-guide. Wrong key.');
             return Promise.reject(new HttpException('Wrong key', HttpStatus.UNAUTHORIZED));
         }       
     }
 
-    @Get('computed-image')
+    @Get('parking-guide')
     @Header('content-type', 'image/jpeg')
-    public async getComputedImage(): Promise<any>{
-        return this.service.requestComputedImage();
+    @UseInterceptors(AdminAuthenticationInterceptor)
+    public async getComputedImage(@Res() res: any, @Headers(AUTHENTICATION_HEADER_TOKEN) authHeader: string): Promise<any>{
+        await this.service.saveComputedImageInStream(res);
     }
 }
