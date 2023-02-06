@@ -17,7 +17,7 @@ import { UtilService } from 'src/core/service/util.service';
 import { Payment } from 'src/orm/entity/payment';
 import { AccountRepository } from 'src/orm/repository/account.repository';
 import { PaymentRepository } from 'src/orm/repository/payment.repository';
-import { filter } from 'rxjs';
+import { filter, firstValueFrom, map, tap } from 'rxjs';
 import { StatusMessage } from 'src/core/messages/status-message';
 import { ZoneRepository } from 'src/orm/repository/zone.repository';
 import { ParkingLotPrioritisingRepository } from 'src/orm/repository/parking-lot-prioritising.repository';
@@ -340,7 +340,7 @@ export class WorkflowService {
     }));
 
     const endpoint = this.configService.get<string>('OVERWATCH_INIT_ENDPOINT')!;
-    const key = this.configService.get<string>('OVERWATCH_INIT_KEY');
+    const key = this.configService.get<string>('OVERWATCH_KEY');
 
     this.httpService.post(endpoint, new InitDto(captureMap, zoneMap).toJson(), { headers: { 'key' : key, 'content-type': 'application/json' }})
     .subscribe({
@@ -352,6 +352,27 @@ export class WorkflowService {
           this.loggerService.log('Overwatch initialized.');
       }
     })
+  }
+
+  public async requestComputedImage(): Promise<Buffer>{
+    const endpoint = this.configService.get<string>('OVERWATCH_IMAGE_ENDPOINT')!;
+    const key = this.configService.get<string>('OVERWATCH_KEY');
+
+   const response = await this.httpService.axiosRef({
+      url: endpoint,
+      method: 'GET',
+      responseType: 'stream',
+      headers: { 'key' : key, 'content-type': 'image/jpeg' }
+  });
+
+  return response.data;
+
+/*
+    return await firstValueFrom(this.httpService.get<any>(endpoint, { headers: { 'key' : key, 'content-type': 'image/jpeg' }})
+        .pipe(map(it => it.data),
+        map(it =>  
+          Buffer.from(it, 'binary')
+        )));*/
   }
 
 
