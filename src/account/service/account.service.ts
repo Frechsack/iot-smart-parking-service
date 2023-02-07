@@ -189,7 +189,8 @@ export class AccountService {
 
     return new AccountDto(
       account.email,
-      (await account.licensPlates).map(it => it.plate)
+      (await account.licensPlates).map(it => it.plate),
+      account.isAdmin
     );
   }
 }
