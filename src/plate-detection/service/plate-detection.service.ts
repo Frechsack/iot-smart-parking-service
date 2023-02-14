@@ -317,6 +317,7 @@ export class PlateDetectionService {
 
           exec(`fswebcam -d ${videoDevice} --png 1 -q ${filePath}`,(error, _stdout, stderr) => {
             if(error !== null || stderr !== '') {
+              this.loggerService.warn('Execute of fswebcam failed, message: "' + stderr +  '"');
               reject(error);
             }
             else {
