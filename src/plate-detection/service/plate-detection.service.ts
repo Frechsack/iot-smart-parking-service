@@ -315,7 +315,7 @@ export class PlateDetectionService {
             filePath = snapshotDir + (Math.random() * 100).toFixed(0) + '.png';
           while(await existsFile(filePath))
 
-          exec(`fswebcam -d ${videoDevice} --png 1 -q ${filePath}`,(error, _stdout, stderr) => {
+          exec(`/usr/bin/fswebcam -d ${videoDevice} --png 1 -q ${filePath}`,(error, _stdout, stderr) => {
             if(error !== null || stderr !== '') {
               this.loggerService.warn('Execute of fswebcam failed, message: "' + stderr +  '"');
               reject(error);

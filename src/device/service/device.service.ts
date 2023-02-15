@@ -16,6 +16,8 @@ import { DeviceDto } from '../dto/device-dto';
 import { DeviceStatusDto } from '../dto/device-status-dto';
 import { DeviceInstructionDto } from '../dto/device-instruction-dto';
 import { PaginationDto } from 'src/core/dto/pagination-dto';
+import { Zone } from 'src/orm/entity/zone';
+import { ZoneRepository } from 'src/orm/repository/zone.repository';
 
 /**
 * Stellt Standartfunktionen für die Anlage und modifizierung von Geräten, deren Anweisungen und Status bereit.
@@ -30,12 +32,13 @@ export class DeviceService {
     private readonly deviceTypeRepository: DeviceTypeRepository,
     private readonly parkingLotRepository: ParkingLotRepository,
     private readonly communicationService: CommunicationService,
-    private readonly loggerService: LoggerService
+    private readonly loggerService: LoggerService,
+    private readonly zoneRepository: ZoneRepository
   ) {
     this.loggerService.context = DeviceService.name;
     // Externe Informationen speichern
     this.communicationService.registerLane
-      .subscribe(it => this.registerDevice(it.mac,it.deviceType,it.parkingLotNr).catch(() => {}));
+      .subscribe(it => this.registerDevice(it.mac,it.deviceType,it.parkingLotNr, it.zoneNr).catch(() => {}));
     this.communicationService.statusLane
       .subscribe(it => this.saveDeviceStatus(it.mac, it.status).catch(() => {}));
     this.communicationService.instructionLane
@@ -198,7 +201,7 @@ export class DeviceService {
   * @param parkingLotNr Die optionale Parkplatzzuordnung.
   * @param parentDeviceMac Die optionale mac des übergeordneten Geräts.
   */
-  private async registerDevice(mac: string, deviceTypeName: DeviceTypeName, parkingLotNr: number | null | undefined = undefined): Promise<Device>{
+  private async registerDevice(mac: string, deviceTypeName: DeviceTypeName, parkingLotNr: number | null | undefined = undefined, zoneNr: number | null | undefined = undefined): Promise<Device>{
     const transaction = async (manager: EntityManager): Promise<Device> => {
       const deviceRepository = this.deviceRepository.forTransaction(manager);
       const deviceTypeRepository = this.deviceTypeRepository.forTransaction(manager);
@@ -216,6 +219,15 @@ export class DeviceService {
         parkingLot = await parkingLotRepository.save(parkingLot);
       }
 
+      // Finde Zone
+      const zone: Zone | null = zoneNr == null
+        ? null
+        : await this.zoneRepository.findByNr(zoneNr);
+      if(zone == null && zoneNr != null) {
+        this.loggerService.warn(`Device '${mac}' refers to unknown zone '${zoneNr}'.`);
+      }
+
+
       // Finde Gerätetyp.
       const deviceType: DeviceType | null = await deviceTypeRepository.findOneByName(deviceTypeName);
 
@@ -228,6 +240,7 @@ export class DeviceService {
       }
       device.type = Promise.resolve(deviceType);
       device.parkingLot = Promise.resolve(parkingLot === null ? null : parkingLot);
+      device.zone = Promise.resolve(zone);
       return await deviceRepository.save(device)
     }
     try {

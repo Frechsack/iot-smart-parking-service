@@ -26,7 +26,12 @@ export class RegisterMessage extends Message {
     /**
     * Die optionale Parkplatznummer des zu registrierenden Geräts.
     */
-    public readonly parkingLotNr?: number
+    public readonly parkingLotNr?: number,
+
+    /**
+     * Die optionale Zonennummer dieses Geräts.
+     */
+    public readonly zoneNr?: number
   ){
     super(source);
   }
@@ -38,14 +43,15 @@ export class RegisterMessage extends Message {
   * @returns Gibt die umgewandelte Nachricht zurück.
   */
   public static fromPayload(message: string, source: MessageSource): RegisterMessage {
-    const tokens = Token.parseTokens(message,3);
+    const tokens = Token.parseTokens(message,4);
     if(tokens[0].isEmpty() || tokens[1].isEmpty())
       throw new Error('Invalid register-message, message: "' + message + '"' );
 
     const mac = tokens[0].toString();
     const deviceType = valueOf(tokens[1].toString());
     const parkingLotNr = tokens[2].isPresent() ? tokens[2].toNumber() : undefined;
-    return new RegisterMessage(mac, deviceType, source, parkingLotNr);
+    const zoneNr = tokens[3].isPresent() ? tokens[3].toNumber(): undefined;
+    return new RegisterMessage(mac, deviceType, source, parkingLotNr, zoneNr);
   }
 
 }
