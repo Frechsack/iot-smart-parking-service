@@ -180,8 +180,24 @@ export class DeviceService {
       return deviceStatus;
     }
     catch(e){
-      this.loggerService.error(`Update of device-status failed, error: "${e}"`);
-      throw e;
+      // Möglicherweise sind Aufrufe zu schnell, wodurch nicht eindeutige Primärschlüssel entstehen.
+      // Versuche den letzten Eintrag in der DB zu aktualisieren.
+      let deviceStatus = await this.deviceStatusRepository.findLatestById(mac);
+
+      if(deviceStatus == null){
+        this.loggerService.error(`Update of device-status failed, error: "${e}"`);
+        throw e;
+      }
+
+      try {
+          deviceStatus.status = status;
+          deviceStatus = await this.deviceStatusRepository.save(deviceStatus);
+          return deviceStatus;
+      }
+      catch(e){
+        this.loggerService.error(`Update of device-status failed, error: "${e}"`);
+        throw e;
+      }
     }
   }
 
