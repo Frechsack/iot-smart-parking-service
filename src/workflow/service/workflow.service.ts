@@ -17,7 +17,7 @@ import { UtilService } from 'src/core/service/util.service';
 import { Payment } from 'src/orm/entity/payment';
 import { AccountRepository } from 'src/orm/repository/account.repository';
 import { PaymentRepository } from 'src/orm/repository/payment.repository';
-import { filter, firstValueFrom, map, ReadableStreamLike, tap } from 'rxjs';
+import { filter, firstValueFrom, map, ReadableStreamLike, tap, timer } from 'rxjs';
 import { StatusMessage } from 'src/core/messages/status-message';
 import { ZoneRepository } from 'src/orm/repository/zone.repository';
 import { ParkingLotPrioritisingRepository } from 'src/orm/repository/parking-lot-prioritising.repository';
@@ -94,6 +94,25 @@ export class WorkflowService {
     setTimeout(() => {
       this.initOverwatch();
     }, 5000);
+
+    // Aktualisiere Uhrzeit regelmäßig
+    timer(0,1300000).subscribe(() => this.updateDatetime());
+  }
+
+  /**
+   * Verschickt Datum und Uhrzeit.
+   */
+  private async updateDatetime(){
+    const date = new Date(Date.now());
+    const message = {
+      second: date.getSeconds(),
+      minute: date.getMinutes(),
+      hour: date.getHours(),
+      day: date.getDay(),
+      month: date.getMonth(),
+      year: date.getFullYear()
+    };
+    this.communicationService.sendInstruction('DATETIME', JSON.stringify(message));
   }
 
   /**
