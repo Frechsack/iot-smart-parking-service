@@ -96,7 +96,7 @@ export class WorkflowService {
     }, 5000);
 
     // Aktualisiere Uhrzeit regelmäßig
-    timer(0,1300000).subscribe(() => this.updateDatetime());
+    timer(0,180000).subscribe(() => this.updateDatetime());
   }
 
   /**
@@ -108,8 +108,8 @@ export class WorkflowService {
       second: date.getSeconds(),
       minute: date.getMinutes(),
       hour: date.getHours(),
-      day: date.getDay(),
-      month: date.getMonth(),
+      day: date.getDate(),
+      month: date.getMonth() + 1,
       year: date.getFullYear()
     };
     this.communicationService.sendInstruction('DATETIME', JSON.stringify(message));
